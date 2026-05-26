@@ -4,9 +4,10 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/response.php';
 
 function api_listar_peliculas(PDO $pdo): void {
+    limpiar_funciones_expiradas($pdo);
     $stmt = $pdo->query(
         'SELECT p.id, p.titulo, p.sinopsis, p.poster, p.precio,
-                (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id) AS funciones_count
+                (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id AND f.expirada = FALSE) AS funciones_count
          FROM peliculas p
          ORDER BY p.titulo'
     );
@@ -14,6 +15,7 @@ function api_listar_peliculas(PDO $pdo): void {
 }
 
 function api_obtener_pelicula(PDO $pdo, int $id): void {
+    limpiar_funciones_expiradas($pdo);
     $stmt = $pdo->prepare(
         'SELECT id, titulo, sinopsis, poster, precio FROM peliculas WHERE id = ?'
     );
@@ -28,7 +30,7 @@ function api_obtener_pelicula(PDO $pdo, int $id): void {
         'SELECT f.id, f.horario, f.sala,
                 (SELECT COUNT(*) FROM asientos a WHERE a.funcion_id = f.id AND a.disponible = TRUE) AS asientos_libres
          FROM funciones f
-         WHERE f.pelicula_id = ?
+         WHERE f.pelicula_id = ? AND f.expirada = FALSE
          ORDER BY f.horario'
     );
     $stmt->execute([$id]);

@@ -12,5 +12,8 @@
 # El watchdog también corre como servicio systemd (redundancia)
 */5 * * * * /usr/local/bin/watchdog.sh
 
+# ─── Marcar funciones expiradas cada 15 minutos ──────────────
+*/15 * * * * /usr/bin/php /var/www/cine/scripts/limpiar_funciones.php
+
 # ─── Limpiar backups viejos (>30 días) cada domingo ─────────
 0 4 * * 0 find /var/backups/cine -name "*.sql" -mtime +30 -delete

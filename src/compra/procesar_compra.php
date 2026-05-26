@@ -3,7 +3,9 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/functions.php';
-requerir_login();
+requerir_rol('cliente', 'vendedor');
+
+limpiar_funciones_expiradas($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('/compra.php');
@@ -15,9 +17,12 @@ if (!verificar_csrf($_POST['csrf_token'] ?? '')) {
 }
 
 $funcion_id  = (int) ($_POST['funcion_id'] ?? 0);
-$cantidad    = (int) ($_POST['cantidad'] ?? 0);
 $pelicula_id = (int) ($_POST['pelicula_id'] ?? 0);
 $cupon_codigo = trim($_POST['cupon'] ?? '');
+$asientos_ids = $_POST['asientos'] ?? '';
+
+$selected = array_filter(array_map('intval', explode(',', $asientos_ids)));
+$cantidad = count($selected);
 
 if ($funcion_id <= 0 || $cantidad <= 0 || $cantidad > 10) {
     $_SESSION['error'] = 'Datos de compra inválidos.';
@@ -40,19 +45,35 @@ try {
         throw new Exception('Función no encontrada.');
     }
 
+    if ($funcion['expirada']) {
+        throw new Exception('Esta función ya ha finalizado.');
+    }
+
     $precio_unitario = precio_con_matinee((float)$funcion['precio_base'], (bool)$funcion['es_matinee']);
 
+    $placeholders = implode(',', array_fill(0, $cantidad, '?'));
     $asientos = $pdo->prepare(
-        'SELECT id FROM asientos
-         WHERE funcion_id = ? AND disponible = TRUE
-         ORDER BY fila, numero
-         LIMIT ? FOR UPDATE'
+        "SELECT id, disponible FROM asientos
+         WHERE funcion_id = ? AND id IN ($placeholders)
+         FOR UPDATE"
     );
-    $asientos->execute([$funcion_id, $cantidad]);
+    $asientos->execute(array_merge([$funcion_id], $selected));
     $asientos = $asientos->fetchAll();
 
-    if (count($asientos) < $cantidad) {
-        throw new Exception('No hay suficientes asientos disponibles.');
+    if (count($asientos) !== $cantidad) {
+        throw new Exception('Algunos asientos no existen en esta función.');
+    }
+
+    foreach ($asientos as $a) {
+        if (!$a['disponible']) {
+            throw new Exception('El asiento #' . $a['id'] . ' ya no está disponible.');
+        }
+    }
+
+    $ids = array_column($asientos, 'id');
+    $diff = array_diff($selected, $ids);
+    if (!empty($diff)) {
+        throw new Exception('Algunos asientos no pertenecen a esta función.');
     }
 
     $subtotal = $precio_unitario * $cantidad;
@@ -80,9 +101,6 @@ try {
     if ($cupon_id) {
         aplicar_cupon($pdo, $cupon_id);
     }
-
-    $ids = array_column($asientos, 'id');
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
     $pdo->prepare(
         "UPDATE asientos SET disponible = FALSE WHERE id IN ($placeholders)"
