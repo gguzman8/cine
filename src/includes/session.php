@@ -17,7 +17,7 @@ function es_admin(): bool {
 
 function requerir_login(): void {
     if (!esta_logueado()) {
-        header('Location: login.php');
+        header('Location: /login.php');
         exit;
     }
 }

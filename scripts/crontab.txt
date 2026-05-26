@@ -1,0 +1,16 @@
+# ============================================================
+# Crontab — Cine Sendera
+# ============================================================
+# Instalar: crontab crontab.txt
+# Ver:      crontab -l
+# ============================================================
+
+# ─── Respaldo diario de BD a las 3:00 AM ────────────────────
+0 3 * * * /usr/local/bin/respaldo.sh
+
+# ─── Watchdog cada 5 minutos (por si el servicio falla) ─────
+# El watchdog también corre como servicio systemd (redundancia)
+*/5 * * * * /usr/local/bin/watchdog.sh
+
+# ─── Limpiar backups viejos (>30 días) cada domingo ─────────
+0 4 * * 0 find /var/backups/cine -name "*.sql" -mtime +30 -delete
