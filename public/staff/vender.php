@@ -8,6 +8,16 @@ limpiar_funciones_expiradas($pdo);
 
 $checkin_pendientes = $pdo->query('SELECT COUNT(*) FROM compras WHERE checkin_at IS NULL')->fetchColumn();
 
+$entregas_pendientes = $pdo->query(
+    'SELECT dc.id AS compra_id, dc.cliente_nombre, dc.total, dc.created_at,
+            dc.boleto_id, p.nombre AS producto, dd.cantidad
+     FROM dulceria_compras dc
+     JOIN dulceria_detalle dd ON dd.compra_id = dc.id
+     JOIN productos p ON p.id = dd.producto_id
+     WHERE dc.para_llevar = TRUE AND dc.entregado = FALSE
+     ORDER BY dc.created_at'
+)->fetchAll();
+
 $peliculas = $pdo->query(
     'SELECT p.*
      FROM peliculas p'
@@ -36,11 +46,52 @@ $funciones = $pdo->query(
             <span><?= h($_SESSION['usuario_nombre']) ?> (vendedor)</span>
             <a href="vender.php" class="btn-outline">Vender</a>
             <a href="checkin.php" class="btn-outline">Check-in <span class="badge badge-yellow"><?= $checkin_pendientes ?></span></a>
+            <a href="../dulceria.php" class="btn-outline">Dulcería</a>
+            <?php if (count($entregas_pendientes) > 0): ?>
+                <span class="badge badge-yellow" style="font-size:.75rem;">🚚 <?= count($entregas_pendientes) ?> entrega(s)</span>
+            <?php endif; ?>
             <a href="../logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>
         <h2>Vender boletos</h2>
+
+        <?php if (!empty($_SESSION['error_entrega'])): ?>
+            <p class="alert alert-error"><?= h($_SESSION['error_entrega']); unset($_SESSION['error_entrega']); ?></p>
+        <?php endif; ?>
+        <?php if (!empty($_SESSION['success_entrega'])): ?>
+            <p class="alert alert-success"><?= h($_SESSION['success_entrega']); unset($_SESSION['success_entrega']); ?></p>
+        <?php endif; ?>
+
+        <?php if (count($entregas_pendientes) > 0): ?>
+            <section>
+                <h3 class="section-title">🚚 Entregas Pendientes en Sala <span class="count"><?= count($entregas_pendientes) ?></span></h3>
+                <table>
+                    <thead>
+                        <tr><th>Compra</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Total</th><th>Boleto #</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($entregas_pendientes as $e): ?>
+                            <tr>
+                                <td><?= $e['compra_id'] ?></td>
+                                <td><?= h($e['cliente_nombre']) ?></td>
+                                <td><?= h($e['producto']) ?></td>
+                                <td><?= $e['cantidad'] ?></td>
+                                <td>$<?= number_format($e['total'], 2) ?></td>
+                                <td><strong>Sala <?= $e['boleto_id'] ?></strong></td>
+                                <td>
+                                    <form method="POST" action="entregar_dulces_handler.php" style="display:inline;">
+                                        <input type="hidden" name="compra_id" value="<?= $e['compra_id'] ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                        <button type="submit" class="btn btn-sm" style="background:#2e7d32;">✅ Entregado</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </section>
+        <?php endif; ?>
 
         <section>
             <h3 class="section-title">🎬 Películas</h3>
