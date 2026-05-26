@@ -1,0 +1,23 @@
+<?php
+// ============================================================
+// Config.php — Credenciales del servidor (¡NUNCA subir a Git!)
+// ============================================================
+// Copiar a: src/config/config.php (sin .example)
+// Configurar con los valores reales del servidor.
+// ============================================================
+
+// Base de Datos
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'cine');
+define('DB_USER', 'cine_user');
+define('DB_PASS', 'cine_pass');
+
+// Aplicación
+define('SITE_NAME', 'Cine Sendera');
+define('SITE_URL', 'http://cine.sendera.local');
+
+// Matiné: descuento aplicado a funciones antes de 12:00 entre semana
+define('MATINEE_DESCUENTO', 30); // porcentaje
+
+// Zona horaria
+date_default_timezone_set('America/Mexico_City');

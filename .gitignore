@@ -1,2 +1,33 @@
-*.sql
+# Credenciales y configuraciones sensibles
+src/config/config.php
 .env
+*.key
+
+# Backups (respaldo.sh genera .sql)
+/var/backups/
+*.bak
+*.old
+
+# Ignorar SQL dumps de backup, pero NO el schema
+*.sql
+!/sql/*.sql
+
+# Logs
+*.log
+/var/log/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Directorios de sistema
+node_modules/
+vendor/

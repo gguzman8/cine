@@ -49,10 +49,9 @@ MYSQL_SCRIPT
 echo "   Importando schema.sql..."
 mysql -u "$DB_USER" -p"$DB_PASS" cine < "${PROJECT_DIR}/sql/schema.sql"
 
-# Generar asientos para funciones existentes
-for fid in $(mysql -u "$DB_USER" -p"$DB_PASS" cine -N -e "SELECT id FROM funciones"); do
-    mysql -u "$DB_USER" -p"$DB_PASS" cine -e "CALL generar_asientos($fid)" 2>/dev/null || true
-done
+# Sembrar usuarios con hash bcrypt correcto
+echo "   Sembrando usuarios iniciales..."
+php "${PROJECT_DIR}/src/seed.php"
 
 echo "   Base de datos lista."
 
@@ -66,6 +65,11 @@ cat > /etc/apache2/sites-available/cine.conf <<APACHE
     <Directory ${PROJECT_DIR}/public>
         Options -Indexes +FollowSymLinks
         AllowOverride All
+        Require all granted
+    </Directory>
+
+    Alias /src ${PROJECT_DIR}/src
+    <Directory ${PROJECT_DIR}/src>
         Require all granted
     </Directory>
 

@@ -22,3 +22,25 @@ h2 { margin-bottom: 1.5rem; font-size: 1.8rem; }
 .error { color: #e50914; margin-bottom: 1rem; }
 .ticket { background: #1e1e1e; border: 2px dashed #e50914; border-radius: 8px; padding: 2rem; max-width: 500px; margin: 2rem auto; }
 .ticket p { margin-bottom: .6rem; }
+.ticket-qr { text-align: center; margin-bottom: 1rem; }
+.ticket-qr svg { max-width: 180px; height: auto; border: 1px solid #333; border-radius: 4px; padding: 4px; background: #fff; }
+.ticket-actions { display: flex; gap: .5rem; justify-content: center; margin-top: 1.5rem; }
+.btn-print { background: #333; }
+.btn-print:hover { background: #555; }
+.matinee-banner { background: #2d5016; color: #fff; padding: .8rem 1rem; border-radius: 6px; text-align: center; margin-bottom: 1.5rem; font-weight: bold; }
+.matinee-price { color: #4caf50; font-size: .8rem; display: block; }
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: #1e1e1e; border-radius: 8px; padding: 1.5rem; text-align: center; border: 1px solid #333; }
+.stat-card h3 { font-size: 2rem; color: #e50914; margin-bottom: .3rem; }
+.stat-card p { color: #aaa; font-size: .9rem; }
+section { margin-bottom: 2rem; }
+table { width: 100%; border-collapse: collapse; background: #1e1e1e; border-radius: 8px; overflow: hidden; }
+th, td { padding: .6rem 1rem; text-align: left; border-bottom: 1px solid #333; }
+th { background: #2a2a2a; color: #e50914; font-size: .85rem; text-transform: uppercase; }
+tr:hover { background: #2a2a2a; }
+@media print {
+    header, .ticket-actions, .btn { display: none !important; }
+    body { background: #fff; color: #000; }
+    .ticket { border: 2px solid #000; max-width: 100%; background: #fff; color: #000; }
+    .ticket-qr svg { border: 1px solid #ccc; }
+}

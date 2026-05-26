@@ -1,0 +1,50 @@
+# ============================================================
+# sshd_config — Configuración segura para OpenSSH
+# ============================================================
+# Ubicación: /etc/ssh/sshd_config
+# Después de modificar: sudo systemctl restart sshd
+# ============================================================
+
+# Puerto no estándar (mitiga escaneos automatizados)
+Port 2222
+
+# Solo permitir SSH versión 2 (más segura)
+Protocol 2
+
+# No permitir login como root directamente
+PermitRootLogin no
+
+# Solo permitir usuarios específicos (opcional)
+# AllowUsers admin vendedor1
+
+# Autenticación con llave pública (recomendado)
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+
+# Deshabilitar autenticación por contraseña (opcional — más seguro)
+# PasswordAuthentication no
+
+# Tiempo de gracia para autenticación (segundos)
+LoginGraceTime 60
+
+# Número máximo de intentos de autenticación
+MaxAuthTries 3
+
+# Número máximo de sesiones
+MaxSessions 2
+
+# Deshabilitar forwarding de X11 (no necesario para servidor web)
+X11Forwarding no
+
+# Deshabilitar forwarding de agente TCP
+AllowTcpForwarding no
+
+# Log de conexiones
+LogLevel VERBOSE
+
+# Desconectar si no hay actividad (segundos)
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# Usar PAM
+UsePAM yes
