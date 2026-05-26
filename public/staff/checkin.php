@@ -63,6 +63,7 @@ if ($compra_id > 0) {
             <a href="vender.php" class="btn-outline">Vender</a>
             <a href="checkin.php" class="btn-outline">Check-in <span class="badge badge-yellow"><?= $checkin_pendientes ?></span></a>
             <?php if (es_admin()): ?><a href="../admin.php" class="btn-outline">Panel admin</a><?php endif; ?>
+            <a href="../perfil.php" class="btn-outline">Mi Perfil</a>
             <a href="../logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>

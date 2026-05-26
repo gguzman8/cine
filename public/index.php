@@ -40,6 +40,7 @@ $funciones = $pdo->query(
                     <a href="staff/vender.php" class="btn-outline">Vender boletos</a>
                 <?php endif; ?>
                 <a href="dulceria.php" class="btn-outline">Dulcería</a>
+                <a href="perfil.php" class="btn-outline">Mi Perfil</a>
                 <a href="logout.php" class="btn-muted">Cerrar sesión</a>
             <?php else: ?>
                 <a href="dulceria.php" class="btn-outline">Dulcería</a>
