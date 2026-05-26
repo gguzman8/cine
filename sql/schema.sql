@@ -61,13 +61,15 @@ CREATE TABLE IF NOT EXISTS asientos (
 
 -- ─── 5. TABLA: compras ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS compras (
-    id          INT             AUTO_INCREMENT PRIMARY KEY,
-    usuario_id  INT             NOT NULL,
-    funcion_id  INT             NOT NULL,
-    cupon_id    INT             DEFAULT NULL,
-    checkin_at  DATETIME        DEFAULT NULL,
-    total       DECIMAL(10,2)   NOT NULL,
-    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id              INT             AUTO_INCREMENT PRIMARY KEY,
+    usuario_id      INT             NOT NULL,
+    funcion_id      INT             NOT NULL,
+    cliente_nombre  VARCHAR(255)    NOT NULL,
+    vendedor_nombre VARCHAR(255)    NOT NULL DEFAULT 'Sistema',
+    cupon_id        INT             DEFAULT NULL,
+    checkin_at      DATETIME        DEFAULT NULL,
+    total           DECIMAL(10,2)   NOT NULL,
+    created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (funcion_id) REFERENCES funciones(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -94,7 +96,17 @@ CREATE TABLE IF NOT EXISTS cupones (
     created_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- ─── 8. STORED PROCEDURE: generar_asientos ───────────────────
+-- ─── 8. TABLA: api_tokens ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS api_tokens (
+    id          INT             AUTO_INCREMENT PRIMARY KEY,
+    usuario_id  INT             NOT NULL,
+    token       VARCHAR(64)     NOT NULL UNIQUE,
+    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_token (token)
+) ENGINE=InnoDB;
+
+-- ─── 9. STORED PROCEDURE: generar_asientos ───────────────────
 -- Genera 40 asientos (5 filas x 8 columnas) para una función.
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS generar_asientos(IN p_funcion_id INT)

@@ -56,6 +56,14 @@ $funciones = $funciones->fetchAll();
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
             <input type="hidden" name="asientos" id="asientos-input" value="">
 
+            <?php if (es_staff()): ?>
+                <div class="form-stacked" style="max-width:500px;">
+                    <label>Nombre del cliente
+                        <input type="text" name="cliente_nombre" required placeholder="Nombre del cliente">
+                    </label>
+                </div>
+            <?php endif; ?>
+
             <div class="form-stacked" style="max-width:500px;">
                 <label>Función
                     <select name="funcion_id" id="funcion" required>

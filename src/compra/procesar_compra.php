@@ -92,10 +92,21 @@ try {
     $total = $subtotal - $descuento;
     if ($total < 0) $total = 0;
 
+    if (es_staff()) {
+        $cliente_nombre = trim($_POST['cliente_nombre'] ?? '');
+        if ($cliente_nombre === '') {
+            throw new Exception('Debes ingresar el nombre del cliente.');
+        }
+        $vendedor_nombre = $_SESSION['usuario_nombre'];
+    } else {
+        $cliente_nombre = $_SESSION['usuario_nombre'];
+        $vendedor_nombre = 'Sistema';
+    }
+
     $stmt = $pdo->prepare(
-        'INSERT INTO compras (usuario_id, funcion_id, cupon_id, total) VALUES (?, ?, ?, ?)'
+        'INSERT INTO compras (usuario_id, funcion_id, cliente_nombre, vendedor_nombre, cupon_id, total) VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$_SESSION['usuario_id'], $funcion_id, $cupon_id, $total]);
+    $stmt->execute([$_SESSION['usuario_id'], $funcion_id, $cliente_nombre, $vendedor_nombre, $cupon_id, $total]);
     $compra_id = (int) $pdo->lastInsertId();
 
     if ($cupon_id) {

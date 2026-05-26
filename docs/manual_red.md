@@ -55,12 +55,31 @@ Se recomienda usar IP fija en el servidor para consistencia.*
 - **URL Web:** `http://192.168.1.100` (o `http://cine.sendera.local` si está configurado DNS)
 - **SSH:** `ssh -p 2222 usuario@192.168.1.100`
 - **Admin panel:** `http://192.168.1.100/admin.php`
+- **Staff ventas:** `http://192.168.1.100/staff/vender.php`
+- **Staff check-in:** `http://192.168.1.100/staff/checkin.php`
+- **API REST:** `http://192.168.1.100/api/index.php/`
+- **phpMyAdmin:** `http://192.168.1.100/phpmyadmin/`
 
 ## Cuentas por Defecto
 
-| Usuario  | Email             | Contraseña  | Rol    |
-|----------|-------------------|-------------|--------|
-| Admin    | admin@cine.com    | admin123    | admin  |
-| Cliente  | carlos@email.com  | cliente123  | cliente|
+| Usuario  | Email             | Contraseña  | Rol       |
+|----------|-------------------|-------------|-----------|
+| Admin    | admin@cine.com    | admin123    | admin     |
+| Staff    | staff@cine.com    | staff123    | vendedor  |
+| Cliente  | carlos@email.com  | cliente123  | cliente   |
 
 *Cambiar contraseñas en producción.*
+
+## Estructura de URLs (Rutas Relativas)
+
+| Ruta | Descripción | Roles permitidos |
+|---|---|---|
+| `/` | Cartelera pública | Todos |
+| `/login.php` | Inicio de sesión | Todos |
+| `/register.php` | Registro | Todos |
+| `/compra.php` | Compra de boletos | cliente, vendedor |
+| `/ticket.php` | Ticket digital | Dueño de compra o staff |
+| `/admin.php` | Panel de administración | admin |
+| `/staff/vender.php` | Venta en mostrador | admin, vendedor |
+| `/staff/checkin.php` | Check-in de clientes | admin, vendedor |
+| `/api/index.php/` | API REST | Token Bearer |

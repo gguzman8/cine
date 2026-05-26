@@ -4,6 +4,8 @@ require_once __DIR__ . '/../../src/includes/session.php';
 require_once __DIR__ . '/../../src/includes/functions.php';
 requerir_rol('admin', 'vendedor');
 
+$checkin_pendientes = $pdo->query('SELECT COUNT(*) FROM compras WHERE checkin_at IS NULL')->fetchColumn();
+
 $compra_id = (int) ($_GET['compra_id'] ?? ($_POST['compra_id'] ?? 0));
 $compra = null;
 $asientos = [];
@@ -58,10 +60,10 @@ if ($compra_id > 0) {
         <h1>Cine Sendera — Check-in</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?> (<?= h($_SESSION['usuario_rol']) ?>)</span>
-            <a href="../index.php">Cartelera</a>
-            <a href="vender.php">Vender</a>
-            <?php if (es_admin()): ?><a href="../admin.php">Panel admin</a><?php endif; ?>
-            <a href="../logout.php">Cerrar sesión</a>
+            <a href="vender.php" class="btn-outline">Vender</a>
+            <a href="checkin.php" class="btn-outline">Check-in <span class="badge badge-yellow"><?= $checkin_pendientes ?></span></a>
+            <?php if (es_admin()): ?><a href="../admin.php" class="btn-outline">Panel admin</a><?php endif; ?>
+            <a href="../logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>

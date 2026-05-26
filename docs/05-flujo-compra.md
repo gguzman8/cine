@@ -7,7 +7,8 @@ Usuario               Navegador/PHP                  MySQL
    │                       │                          │
    │  1. GET /index.php    │                          │
    │──────────────────────►│                          │
-   │                       │  2. SELECT peliculas     │
+   │                       │  2. SELECT peliculas +   │
+   │                       │     funciones             │
    │                       │─────────────────────────►│
    │                       │◄─────────────────────────│
    │◄──────────────────────│                          │
@@ -23,37 +24,47 @@ Usuario               Navegador/PHP                  MySQL
    │                       │◄─────────────────────────│
    │◄──────────────────────│                          │
    │                       │                          │
-   │  5. Elige función +   │                          │
-   │     cantidad          │                          │
+   │  5. Elige función     │                          │
+   │                       │  6. AJAX: GET             │
+   │                       │     obtener_asientos.php  │
+   │                       │─────────────────────────►│
+   │                       │◄─────────────────────────│
+   │                       │  JSON: [{id, fila,       │
+   │                       │  numero, disponible}]    │
+   │◄──────────────────────│                          │
+   │                       │                          │
+   │  7. Selecciona        │                          │
+   │     asientos +        │                          │
+   │     (cupón opcional)  │                          │
    │──────────────────────►│                          │
    │   POST a              │                          │
    │   procesar_compra.php │                          │
    │                       │                          │
-   │                       │  6. BEGIN TRANSACTION    │
+   │                       │  8. BEGIN TRANSACTION    │
    │                       │─────────────────────────►│
    │                       │                          │
-   │                       │  7. SELECT ... FOR UPDATE│
+   │                       │  9. SELECT ... FOR UPDATE│
    │                       │     (bloquea filas)      │
    │                       │─────────────────────────►│
    │                       │◄─────────────────────────│
    │                       │                          │
-   │                       │  8. UPDATE asientos      │
+   │                       │  10. UPDATE asientos     │
    │                       │     SET disponible=0     │
    │                       │─────────────────────────►│
    │                       │                          │
-   │                       │  9. INSERT compra +      │
+   │                       │  11. INSERT compra +     │
    │                       │     detalle_compra       │
    │                       │─────────────────────────►│
    │                       │                          │
-   │                       │  10. COMMIT              │
+   │                       │  12. COMMIT              │
    │                       │─────────────────────────►│
    │                       │                          │
    │◄──────────────────────│                          │
    │                       │                          │
-   │  11. GET /ticket.php  │                          │
+   │  13. GET /ticket.php  │                          │
    │      ?compra_id=1     │                          │
    │──────────────────────►│                          │
-   │                       │  12. SELECT compra +     │
+   │                       │  14. SELECT compra +     │
    │                       │      detalle + asientos  │
    │                       │─────────────────────────►│
    │                       │◄─────────────────────────│
@@ -63,29 +74,50 @@ Usuario               Navegador/PHP                  MySQL
 ## Explicación del Flujo
 
 ### 1. Cartelera
-- `index.php` consulta todas las películas y las muestra en una cuadrícula.
-- Cada película tiene un enlace a `compra.php` con su ID.
+- `index.php` consulta todas las películas activas y las muestra en cards.
+- Una segunda tabla lista las funciones disponibles con horarios, sala y precio.
+- Las funciones matiné se resaltan con fondo verde y precio tachado + descuento.
 
-### 2. Selección de Función
+### 2. Selección de Función y Asientos
 - `compra.php` recibe `pelicula_id` por GET.
-- Consulta las funciones disponibles y la cantidad de asientos libres.
-- Muestra un `<select>` con horarios y un `<input>` para cantidad.
+- Muestra un `<select>` con funciones disponibles y asientos libres.
+- Al elegir una función, se carga el mapa de asientos vía AJAX (`obtener_asientos.php`).
+- El mapa muestra 40 asientos (filas A-E, 8 columnas) con colores:
+  - **Verde:** disponible
+  - **Rojo:** ocupado
+  - **Amarillo:** seleccionado por el usuario
+- El total se actualiza en tiempo real.
+- Si el usuario es `vendedor`, se muestra un campo para ingresar el nombre del cliente.
+- Cupón de descuento opcional.
 
 ### 3. Transacción de Compra
-- `procesar_compra.php` recibe `funcion_id`, `cantidad` por POST.
-- Usa una **transacción SQL** con `FOR UPDATE` para evitar condiciones de carrera (race conditions).
-- `FOR UPDATE` bloquea las filas seleccionadas hasta que termine la transacción, impidiendo que dos usuarios compren el mismo asiento simultáneamente.
+- `procesar_compra.php` recibe `funcion_id`, `asientos` (IDs separados por coma) por POST.
+- Usa una **transacción SQL** con `FOR UPDATE` para evitar condiciones de carrera.
+- `FOR UPDATE` bloquea las filas seleccionadas hasta que termine la transacción.
+- Descuento matiné: se aplica solo si la función es matiné Y la compra es antes de las 12:00.
+- Si es staff, guarda el nombre del vendedor; si es cliente, guarda "Sistema".
+- Si hay cupón, valida disponibilidad y aplica descuento.
 
 ### 4. Ticket de Confirmación
 - `ticket.php` muestra los detalles de la compra: película, horario, asientos, total.
-- Solo el usuario que realizó la compra puede ver su ticket (filtro por `usuario_id`).
+- Muestra el nombre del cliente y quién vendió (staff o "Sistema").
+- Staff puede hacer check-in directamente desde el ticket.
+- Estado del check-in: pendiente (badge amarillo) o realizado (badge verde).
+
+### 5. Check-in (Staff)
+- `staff/checkin.php` permite buscar una compra por ID.
+- Muestra los datos completos y permite registrar la entrada.
+- `checkin_handler.php` procesa con transacción y `FOR UPDATE`.
+- También se puede hacer check-in directamente desde `ticket.php`.
 
 ## Manejo de Errores
 
 | Situación | Respuesta |
 |---|---|
 | No hay suficientes asientos | Rollback + mensaje de error |
-| Función no existe | Rollback + mensaje de error |
+| Función no existe o expirada | Rollback + mensaje de error |
 | Usuario no logueado | Redirección a login |
-| Cantidad > 10 | Mensaje de error |
+| Más de 10 asientos | Mensaje de error |
 | CSRF inválido | Formulario rechazado |
+| Cupón inválido o agotado | Rollback + mensaje de error |
+| Asiento ya no disponible | Rollback + mensaje de error |

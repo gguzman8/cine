@@ -1,4 +1,4 @@
-# Scripts Bash
+# Scripts
 
 ## 1. Watchdog — `scripts/watchdog.sh`
 
@@ -115,4 +115,26 @@ sudo ./scripts/gestion_staff.sh scripts/staff.csv
 │   └── maria.lopez/
 └── admins/
     └── ana.martinez/
+```
+
+---
+
+## 4. Limpieza de Funciones Expiradas — `scripts/limpiar_funciones.php`
+
+**Propósito:** Marcar como expiradas las funciones cuya hora ya pasó.
+
+### Comportamiento
+
+```sql
+UPDATE funciones SET expirada = TRUE WHERE horario <= NOW() AND expirada = FALSE
+```
+
+Se ejecuta:
+- **En cada carga de página** que muestra funciones (defense in depth)
+- **Cada 15 minutos** vía cron como respaldo
+
+### Crontab
+
+```
+*/15 * * * * php /var/www/html/cine/scripts/limpiar_funciones.php
 ```

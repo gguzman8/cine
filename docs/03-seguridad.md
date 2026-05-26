@@ -40,6 +40,8 @@ Esto separa los datos del SQL, haciendo imposible la inyección.
 
 - Token CSRF generado con `bin2hex(random_bytes(32))`
 - Verificación en cada POST con `hash_equals()` (timing-safe)
+- Implementado en: `procesar_compra.php`, `checkin_handler.php`
+- **No implementado** en los handlers del admin (admin_pelicula_*, admin_funcion_handler, admin_staff_handler)
 
 ## 5. Firewall (UFW)
 
@@ -69,21 +71,36 @@ En `setup.sh` se configura Apache con:
 - No tiene permisos para otras bases de datos del sistema
 - Conexión solo desde `localhost` (no remota)
 
-## 9. Logs de Seguridad
+## 9. Protección contra Condiciones de Carrera
+
+La compra de boletos y el check-in usan transacciones SQL con `SELECT ... FOR UPDATE`:
+
+```php
+$pdo->beginTransaction();
+$stmt = $pdo->prepare('SELECT ... FROM asientos WHERE ... FOR UPDATE');
+// ... validaciones ...
+$pdo->commit();
+```
+
+Esto evita que dos usuarios compren el mismo asiento simultáneamente.
+
+## 10. Logs de Seguridad
 
 - `/var/log/cine_error.log` — eventos de watchdog, respaldos, errores
 - Apache logs en `/var/log/apache2/` — accesos y errores web
 - Los scripts nunca registran contraseñas en los logs
 
-## 10. Checklist de Seguridad
+## 11. Checklist de Seguridad
 
-- [ ] Contraseñas con bcrypt (cost >= 10)
-- [ ] Prepared statements en todas las queries
-- [ ] Sesión con httponly + samesite
-- [ ] Token CSRF en formularios POST
-- [ ] Firewall con UFW (deny incoming por defecto)
-- [ ] SSH en puerto no estándar (2222)
-- [ ] Rate-limit en SSH
-- [ ] Options -Indexes en Apache
-- [ ] Usuario BD sin permisos globales
-- [ ] Backups con verificación de espacio en disco
+- [x] Contraseñas con bcrypt (cost >= 10)
+- [x] Prepared statements en todas las queries
+- [x] Sesión con httponly + samesite
+- [x] Token CSRF en formularios de compra y check-in
+- [ ] Token CSRF en formularios del admin
+- [x] Firewall con UFW (deny incoming por defecto)
+- [x] SSH en puerto no estándar (2222)
+- [x] Rate-limit en SSH
+- [x] Options -Indexes en Apache
+- [x] Usuario BD sin permisos globales
+- [x] Transacciones FOR UPDATE para condiciones de carrera
+- [x] Backups con verificación de espacio en disco
