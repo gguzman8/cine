@@ -11,6 +11,9 @@ require_once __DIR__ . '/../src/includes/functions.php';
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+    <header>
+        <a href="index.php" style="text-decoration:none;color:inherit;"><h1>Cine Sendera</h1></a>
+    </header>
     <main class="form-container">
         <h2>Registrarse</h2>
         <?php if (!empty($_SESSION['error'])): ?>
@@ -26,9 +29,9 @@ require_once __DIR__ . '/../src/includes/functions.php';
             <label>Contraseña (mín. 6 caracteres)
                 <input type="password" name="password" minlength="6" required>
             </label>
-            <button type="submit">Crear cuenta</button>
+            <button type="submit" class="btn">Crear cuenta</button>
         </form>
-        <p>¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>
+        <p class="form-link">¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>
     </main>
 </body>
 </html>

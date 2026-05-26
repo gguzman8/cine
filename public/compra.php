@@ -39,8 +39,8 @@ $funciones = $funciones->fetchAll();
         <h1>Cine Sendera</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
-            <?php if (es_staff()): ?><a href="staff/vender.php">Vender</a> <a href="staff/checkin.php">Check-in</a><?php endif; ?>
-            <a href="logout.php">Cerrar sesión</a>
+            <a href="index.php" class="btn-outline">Cartelera</a>
+            <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>

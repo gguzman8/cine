@@ -31,3 +31,4 @@ Thumbs.db
 # Directorios de sistema
 node_modules/
 vendor/
+.claude/

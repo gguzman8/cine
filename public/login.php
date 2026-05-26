@@ -11,6 +11,9 @@ require_once __DIR__ . '/../src/includes/functions.php';
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+    <header>
+        <a href="index.php" style="text-decoration:none;color:inherit;"><h1>Cine Sendera</h1></a>
+    </header>
     <main class="form-container">
         <h2>Iniciar sesión</h2>
         <?php if (!empty($_SESSION['error'])): ?>
@@ -23,9 +26,9 @@ require_once __DIR__ . '/../src/includes/functions.php';
             <label>Contraseña
                 <input type="password" name="password" required>
             </label>
-            <button type="submit">Entrar</button>
+            <button type="submit" class="btn">Entrar</button>
         </form>
-        <p>¿No tienes cuenta? <a href="register.php">Regístrate</a></p>
+        <p class="form-link">¿No tienes cuenta? <a href="register.php">Regístrate</a></p>
     </main>
 </body>
 </html>

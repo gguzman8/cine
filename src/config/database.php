@@ -17,5 +17,5 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die('Error de conexión: ' . htmlspecialchars($e->getMessage()));
+    throw new \RuntimeException('Error de conexión: ' . $e->getMessage());
 }
