@@ -52,3 +52,7 @@ function aplicar_cupon(PDO $pdo, int $cupon_id): void {
     $pdo->prepare('UPDATE cupones SET usos_actuales = usos_actuales + 1 WHERE id = ?')
         ->execute([$cupon_id]);
 }
+
+function limpiar_funciones_expiradas(PDO $pdo): void {
+    $pdo->exec("UPDATE funciones SET expirada = TRUE WHERE horario <= NOW() AND expirada = FALSE");
+}

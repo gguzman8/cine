@@ -42,8 +42,10 @@ CREATE TABLE IF NOT EXISTS funciones (
     horario     DATETIME        NOT NULL,
     sala        VARCHAR(50)     NOT NULL,
     es_matinee  BOOLEAN         NOT NULL DEFAULT FALSE,
+    expirada    BOOLEAN         NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (pelicula_id) REFERENCES peliculas(id) ON DELETE CASCADE
+    FOREIGN KEY (pelicula_id) REFERENCES peliculas(id) ON DELETE CASCADE,
+    INDEX idx_expirada (expirada)
 ) ENGINE=InnoDB;
 
 -- ─── 4. TABLA: asientos ──────────────────────────────────────
@@ -63,6 +65,7 @@ CREATE TABLE IF NOT EXISTS compras (
     usuario_id  INT             NOT NULL,
     funcion_id  INT             NOT NULL,
     cupon_id    INT             DEFAULT NULL,
+    checkin_at  DATETIME        DEFAULT NULL,
     total       DECIMAL(10,2)   NOT NULL,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
