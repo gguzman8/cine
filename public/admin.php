@@ -404,7 +404,7 @@ $peliculas = $pdo ? $pdo->query(
                 <label>Sala
                     <input type="text" name="sala" placeholder="Sala 1" required>
                 </label>
-                <label class="check">
+                <label class="checkbox-label">
                     <input type="checkbox" name="es_matinee" value="1"> Matiné
                 </label>
                 <button type="submit" class="btn">Agregar función</button>
