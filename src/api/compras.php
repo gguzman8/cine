@@ -7,6 +7,8 @@ require_once __DIR__ . '/middleware.php';
 function api_crear_compra(PDO $pdo): void {
     $usuario = requerir_autenticacion($pdo);
 
+    limpiar_funciones_expiradas($pdo);
+
     $data = json_decode(file_get_contents('php://input'), true);
     $funcion_id = (int) ($data['funcion_id'] ?? 0);
     $cantidad   = (int) ($data['cantidad'] ?? 0);
@@ -29,6 +31,10 @@ function api_crear_compra(PDO $pdo): void {
 
         if (!$funcion) {
             throw new Exception('Función no encontrada.');
+        }
+
+        if ($funcion['expirada']) {
+            throw new Exception('Esta función ya ha finalizado.');
         }
 
         $asientos = $pdo->prepare(

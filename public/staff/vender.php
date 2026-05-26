@@ -4,10 +4,12 @@ require_once __DIR__ . '/../../src/includes/session.php';
 require_once __DIR__ . '/../../src/includes/functions.php';
 requerir_rol('admin', 'vendedor');
 
+limpiar_funciones_expiradas($pdo);
+
 $peliculas = $pdo->query(
     'SELECT p.*, COUNT(f.id) AS funciones_count
      FROM peliculas p
-     LEFT JOIN funciones f ON f.pelicula_id = p.id
+     LEFT JOIN funciones f ON f.pelicula_id = p.id AND f.expirada = FALSE
      GROUP BY p.id'
 )->fetchAll();
 ?>
@@ -23,8 +25,10 @@ $peliculas = $pdo->query(
     <header>
         <h1>Cine Sendera — Staff</h1>
         <nav>
-            <span><?= h($_SESSION['usuario_nombre']) ?> (vendedor)</span>
+            <span><?= h($_SESSION['usuario_nombre']) ?> (<?= h($_SESSION['usuario_rol']) ?>)</span>
+            <a href="checkin.php">Check-in</a>
             <a href="../index.php">Cartelera</a>
+            <?php if (es_admin()): ?><a href="../admin.php">Panel admin</a><?php endif; ?>
             <a href="../logout.php">Cerrar sesión</a>
         </nav>
     </header>

@@ -3,10 +3,12 @@ require_once __DIR__ . '/../src/config/database.php';
 require_once __DIR__ . '/../src/includes/session.php';
 require_once __DIR__ . '/../src/includes/functions.php';
 
+limpiar_funciones_expiradas($pdo);
+
 $peliculas = $pdo->query(
     'SELECT p.*, COUNT(f.id) AS funciones_count
      FROM peliculas p
-     LEFT JOIN funciones f ON f.pelicula_id = p.id
+     LEFT JOIN funciones f ON f.pelicula_id = p.id AND f.expirada = FALSE
      WHERE p.activa = TRUE
      GROUP BY p.id'
 )->fetchAll();
