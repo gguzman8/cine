@@ -54,6 +54,29 @@
 │ activo           │
 │ created_at       │
 └──────────────────┘
+
+┌──────────────────┐     ┌──────────────────────────┐
+│   productos      │     │   dulceria_compras        │
+├──────────────────┤     ├──────────────────────────┤
+│ PK id            │     │ PK id                    │
+│ nombre           │     │ FK usuario_id            │
+│ descripcion      │     │ cliente_nombre           │
+│ precio           │     │ vendedor_nombre          │
+│ activa           │     │ para_llevar              │
+│ created_at       │     │ boleto_id (nullable)     │
+└──────────────────┘     │ entregado                │
+        │                │ total                    │
+        │ 1:N            │ created_at               │
+        │                └────────┬─────────────────┘
+┌───────▼──────────┐             │
+│ dulceria_detalle │             │
+├──────────────────┤      1:N    │
+│ PK id            │─────────────┘
+│ FK compra_id     │
+│ FK producto_id   │
+│ cantidad         │
+│ precio           │
+└──────────────────┘
 ```
 
 ## Diccionario de Tablas
@@ -136,6 +159,38 @@
 | activo | BOOLEAN | TRUE = cupón vigente |
 | created_at | TIMESTAMP | Fecha de creación |
 
+### `productos`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | INT (PK) | Identificador |
+| nombre | VARCHAR(200) | Nombre del producto |
+| descripcion | TEXT | Descripción breve |
+| precio | DECIMAL(10,2) | Precio unitario |
+| activa | BOOLEAN | TRUE = visible en dulcería, FALSE = oculto |
+| created_at | TIMESTAMP | Fecha de alta |
+
+### `dulceria_compras`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | INT (PK) | Identificador |
+| usuario_id | INT (FK → usuarios.id) | Usuario que compró |
+| cliente_nombre | VARCHAR(255) | Nombre del cliente |
+| vendedor_nombre | VARCHAR(255) | "Sistema" o nombre del staff |
+| para_llevar | BOOLEAN | TRUE = para llevar, FALSE = consumo en sala |
+| boleto_id | INT (FK nullable → compras.id) | Boleto asociado (para llevar) |
+| entregado | BOOLEAN | TRUE = entregado por staff |
+| total | DECIMAL(10,2) | Monto total |
+| created_at | TIMESTAMP | Fecha de compra |
+
+### `dulceria_detalle`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | INT (PK) | Identificador |
+| compra_id | INT (FK → dulceria_compras.id) | Compra padre |
+| producto_id | INT (FK → productos.id) | Producto adquirido |
+| cantidad | INT | Cantidad comprada |
+| precio | DECIMAL(10,2) | Precio pagado por unidad |
+
 ### `api_tokens`
 | Columna | Tipo | Descripción |
 |---|---|---|
@@ -155,7 +210,7 @@ CALL generar_asientos(1);  -- Genera asientos A1-E8 para la función ID=1
 
 ## Datos de Prueba
 
-El schema incluye 3 películas, 9 funciones y 3 cupones. Al ejecutar `setup.sh`, se genera automáticamente la matriz de asientos para cada función y los usuarios por defecto vía `src/seed.php`.
+El schema incluye 3 películas, 9 funciones, 3 cupones y 7 productos de dulcería. Al ejecutar `setup.sh`, se genera automáticamente la matriz de asientos para cada función y los usuarios por defecto vía `src/seed.php`.
 
 ### Películas
 | Título | Precio |
@@ -163,6 +218,17 @@ El schema incluye 3 películas, 9 funciones y 3 cupones. Al ejecutar `setup.sh`,
 | Dune: Parte Dos | $95.00 |
 | Kung Fu Panda 4 | $75.00 |
 | Intensamente 2 | $80.00 |
+
+### Productos Dulcería
+| Nombre | Precio |
+|---|---|
+| Palomitas Grandes | $85.00 |
+| Palomitas Medianas | $65.00 |
+| Refresco Grande | $55.00 |
+| Refresco Mediano | $40.00 |
+| Nachos | $70.00 |
+| Hot Dog | $55.00 |
+| Dulces Varios | $35.00 |
 
 ### Cupones
 | Código | Descuento | Usos máximos |

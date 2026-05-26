@@ -55,6 +55,7 @@ Se recomienda usar IP fija en el servidor para consistencia.*
 - **URL Web:** `http://192.168.1.100` (o `http://cine.sendera.local` si está configurado DNS)
 - **SSH:** `ssh -p 2222 usuario@192.168.1.100`
 - **Admin panel:** `http://192.168.1.100/admin.php`
+- **Dulcería:** `http://192.168.1.100/dulceria.php`
 - **Staff ventas:** `http://192.168.1.100/staff/vender.php`
 - **Staff check-in:** `http://192.168.1.100/staff/checkin.php`
 - **API REST:** `http://192.168.1.100/api/index.php/`
@@ -78,6 +79,8 @@ Se recomienda usar IP fija en el servidor para consistencia.*
 | `/login.php` | Inicio de sesión | Todos |
 | `/register.php` | Registro | Todos |
 | `/compra.php` | Compra de boletos | cliente, vendedor |
+| `/dulceria.php` | Tienda de dulcería | Todos (autenticados) |
+| `/dulceria_recibo.php` | Recibo de dulcería | Dueño de compra |
 | `/ticket.php` | Ticket digital | Dueño de compra o staff |
 | `/admin.php` | Panel de administración | admin |
 | `/staff/vender.php` | Venta en mostrador | admin, vendedor |
