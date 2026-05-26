@@ -10,6 +10,7 @@ if (!es_admin()) {
 $pdo = null;
 try {
     require_once __DIR__ . '/../src/config/database.php';
+    limpiar_funciones_expiradas($pdo);
 } catch (\RuntimeException $e) {
     // $pdo stays null; monitoring will reflect the outage
 }
@@ -92,7 +93,6 @@ $peliculas = $pdo ? $pdo->query(
         <h1>Cine Sendera — Admin</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
-            <a href="index.php" class="btn-outline">Cartelera</a>
             <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
@@ -166,7 +166,7 @@ $peliculas = $pdo ? $pdo->query(
         </section>
 
         <section>
-            <h3>Funciones de Hoy</h3>
+            <h3 class="section-title">📅 Funciones de Hoy <span class="count"><?= count($funciones_hoy) ?></span></h3>
             <table>
                 <thead>
                     <tr><th>Película</th><th>Horario</th><th>Sala</th><th>Asientos libres</th><th>Matiné</th></tr>
@@ -274,41 +274,41 @@ $peliculas = $pdo ? $pdo->query(
             </table>
         </section>
 
-        <section class="admin-form">
-            <h3>Agregar Película</h3>
+        <section>
+            <h3 class="section-title">🎬 Agregar Película</h3>
             <?php if (!empty($_SESSION['error_pelicula'])): ?>
                 <p class="alert alert-error"><?= h($_SESSION['error_pelicula']); unset($_SESSION['error_pelicula']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_pelicula'])): ?>
-                <p class="success"><?= h($_SESSION['success_pelicula']); unset($_SESSION['success_pelicula']); ?></p>
+                <p class="alert alert-success"><?= h($_SESSION['success_pelicula']); unset($_SESSION['success_pelicula']); ?></p>
             <?php endif; ?>
-            <form action="admin_pelicula_handler.php" method="POST">
-                <label style="flex:2;min-width:200px;">Título
+            <form action="admin_pelicula_handler.php" method="POST" class="form-stacked">
+                <label>Título
                     <input type="text" name="titulo" required>
                 </label>
-                <label style="flex:3;min-width:250px;">Sinopsis
+                <label>Sinopsis
                     <input type="text" name="sinopsis" placeholder="Descripción breve">
                 </label>
-                <label style="flex:1;min-width:120px;">Precio ($)
+                <label>Precio ($)
                     <input type="number" name="precio" step="0.01" min="1" required>
                 </label>
-                <label style="flex:1;min-width:130px;">Poster
+                <label>Poster
                     <input type="text" name="poster" placeholder="default.svg">
                 </label>
                 <button type="submit" class="btn">Crear película</button>
             </form>
         </section>
 
-        <section class="admin-form">
-            <h3 id="funciones">Agregar Función</h3>
+        <section>
+            <h3 class="section-title" id="funciones">📅 Agregar Función</h3>
             <?php if (!empty($_SESSION['error_funcion'])): ?>
                 <p class="alert alert-error"><?= h($_SESSION['error_funcion']); unset($_SESSION['error_funcion']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_funcion'])): ?>
-                <p class="success"><?= h($_SESSION['success_funcion']); unset($_SESSION['success_funcion']); ?></p>
+                <p class="alert alert-success"><?= h($_SESSION['success_funcion']); unset($_SESSION['success_funcion']); ?></p>
             <?php endif; ?>
-            <form action="admin_funcion_handler.php" method="POST">
-                <label style="flex:2;min-width:200px;">Película
+            <form action="admin_funcion_handler.php" method="POST" class="form-stacked">
+                <label>Película
                     <select name="pelicula_id" required>
                         <option value="">Seleccionar...</option>
                         <?php foreach ($peliculas as $p): ?>
@@ -316,10 +316,10 @@ $peliculas = $pdo ? $pdo->query(
                         <?php endforeach; unset($_SESSION['nueva_pelicula_id']); ?>
                     </select>
                 </label>
-                <label style="flex:1;min-width:180px;">Horario
+                <label>Horario
                     <input type="datetime-local" name="horario" required>
                 </label>
-                <label style="flex:1;min-width:120px;">Sala
+                <label>Sala
                     <input type="text" name="sala" placeholder="Sala 1" required>
                 </label>
                 <label class="check">
@@ -329,22 +329,22 @@ $peliculas = $pdo ? $pdo->query(
             </form>
         </section>
 
-        <section class="admin-form">
-            <h3>Registrar Staff</h3>
+        <section>
+            <h3 class="section-title">👤 Registrar Staff</h3>
             <?php if (!empty($_SESSION['error_staff'])): ?>
                 <p class="alert alert-error"><?= h($_SESSION['error_staff']); unset($_SESSION['error_staff']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_staff'])): ?>
-                <p class="success"><?= h($_SESSION['success_staff']); unset($_SESSION['success_staff']); ?></p>
+                <p class="alert alert-success"><?= h($_SESSION['success_staff']); unset($_SESSION['success_staff']); ?></p>
             <?php endif; ?>
-            <form action="admin_staff_handler.php" method="POST">
-                <label style="flex:1;min-width:180px;">Nombre
+            <form action="admin_staff_handler.php" method="POST" class="form-stacked">
+                <label>Nombre
                     <input type="text" name="nombre" required>
                 </label>
-                <label style="flex:1;min-width:200px;">Correo
+                <label>Correo
                     <input type="email" name="email" required>
                 </label>
-                <label style="flex:1;min-width:180px;">Contraseña
+                <label>Contraseña
                     <input type="password" name="password" minlength="6" required>
                 </label>
                 <button type="submit" class="btn">Crear staff</button>
