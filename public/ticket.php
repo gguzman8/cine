@@ -7,22 +7,15 @@ requerir_login();
 
 $compra_id = (int) ($_GET['compra_id'] ?? 0);
 
-$es_staff = es_admin() || es_staff();
-
 $stmt = $pdo->prepare(
-    'SELECT c.id, c.total, c.created_at, c.checkin_at, p.titulo, p.precio AS precio_base,
-            f.horario, f.sala, f.es_matinee, u.nombre, u.id AS usuario_id, c.cupon_id
+    'SELECT c.id, c.total, c.created_at, p.titulo, p.precio AS precio_base, f.horario, f.sala, f.es_matinee, u.nombre, c.cupon_id
      FROM compras c
      JOIN funciones f ON f.id = c.funcion_id
      JOIN peliculas p ON p.id = f.pelicula_id
      JOIN usuarios u ON u.id = c.usuario_id
-     WHERE c.id = ?' . ($es_staff ? '' : ' AND c.usuario_id = ?')
+     WHERE c.id = ? AND c.usuario_id = ?'
 );
-if ($es_staff) {
-    $stmt->execute([$compra_id]);
-} else {
-    $stmt->execute([$compra_id, $_SESSION['usuario_id']]);
-}
+$stmt->execute([$compra_id, $_SESSION['usuario_id']]);
 $compra = $stmt->fetch();
 
 if (!$compra) {
@@ -38,15 +31,7 @@ $detalle = $pdo->prepare(
 $detalle->execute([$compra_id]);
 $asientos = $detalle->fetchAll();
 
-$asientos_str = implode(',', array_map(fn($a) => $a['fila'] . $a['numero'], $asientos));
-$qr_data = json_encode([
-    'cine'   => 'Cine Sendera',
-    'compra' => $compra_id,
-    'asientos' => $asientos_str,
-    'titulo' => $compra['titulo'],
-    'horario' => $compra['horario'],
-]);
-$qr = QRCode::fromString($qr_data);
+$qr = QRCode::fromString('CINE:' . $compra['id'] . '|' . $compra['titulo'] . '|' . $compra['horario']);
 $qr_svg = $qr->toSvg(180);
 $qr_png = $qr->toPngBase64(180);
 
@@ -100,21 +85,9 @@ if ($compra['cupon_id']) {
                 <p><strong>Cupón:</strong> <?= h($cupon['codigo']) ?> (<?= $cupon['descuento_porcentaje'] ?>%)</p>
             <?php endif; ?>
             <p><strong>Total:</strong> $<?= number_format($compra['total'], 2) ?></p>
-            <p><strong>Estado:</strong> <span class="badge <?= $compra['checkin_at'] ? 'badge-green' : 'badge-yellow' ?>"><?= $compra['checkin_at'] ? '✅ Check-in realizado' : '⏳ Pendiente' ?></span></p>
-            <p style="font-size:.75rem;color:#666;word-break:break-all;">Código QR: <code style="color:#888;"><?= h($qr_data) ?></code></p>
-            <?php if ($compra['checkin_at']): ?>
-                <p><em>Check-in: <?= date('d/m/Y H:i', strtotime($compra['checkin_at'])) ?></em></p>
-            <?php endif; ?>
             <p><em><?= date('d/m/Y H:i', strtotime($compra['created_at'])) ?></em></p>
             <div class="ticket-actions">
                 <a href="index.php" class="btn">Volver a la cartelera</a>
-                <?php if ($es_staff && !$compra['checkin_at']): ?>
-                    <form method="POST" action="staff/checkin_handler.php" style="display:inline;">
-                        <input type="hidden" name="compra_id" value="<?= $compra['id'] ?>">
-                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                        <button type="submit" class="btn" style="background:#2e7d32;">✅ Check-in</button>
-                    </form>
-                <?php endif; ?>
                 <button onclick="window.print()" class="btn btn-print">Imprimir ticket</button>
             </div>
         </div>
