@@ -24,12 +24,12 @@ $funciones = $pdo->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cine Sendera - Cartelera</title>
+    <title>Cine Uwuntu - Cartelera</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera</h1>
+        <h1>Cine Uwuntu</h1>
         <nav>
             <?php if (esta_logueado()): ?>
                 <span><?= h($_SESSION['usuario_nombre']) ?></span>

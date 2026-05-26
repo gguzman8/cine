@@ -1,5 +1,5 @@
 -- ===============================================================
--- Cine Sendera — Esquema de Base de Datos
+-- Cine Uwuntu — Esquema de Base de Datos
 -- ===============================================================
 -- Este archivo contiene TODA la estructura: tablas, relaciones,
 -- procedimiento almacenado y datos de prueba.

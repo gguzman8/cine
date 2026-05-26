@@ -28,12 +28,12 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Producto - Cine Sendera</title>
+    <title>Editar Producto - Cine Uwuntu</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera — Editar Producto</h1>
+        <h1>Cine Uwuntu — Editar Producto</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
             <a href="admin.php#dulceria" class="btn-outline">← Volver</a>

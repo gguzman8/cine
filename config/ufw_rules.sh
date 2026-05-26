@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-echo "Configurando UFW — Cine Sendera"
+echo "Configurando UFW — Cine Uwuntu"
 
 # Resetear a valores por defecto
 ufw --force reset

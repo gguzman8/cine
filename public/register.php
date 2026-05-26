@@ -12,7 +12,7 @@ require_once __DIR__ . '/../src/includes/functions.php';
 </head>
 <body>
     <header>
-        <a href="index.php" style="text-decoration:none;color:inherit;"><h1>Cine Sendera</h1></a>
+        <a href="index.php" style="text-decoration:none;color:inherit;"><h1>Cine Uwuntu</h1></a>
     </header>
     <main class="form-container">
         <h2>Registrarse</h2>

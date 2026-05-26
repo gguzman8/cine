@@ -19,12 +19,12 @@ if (!$p) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar película - Cine Sendera</title>
+    <title>Editar película - Cine Uwuntu</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera — Editar película</h1>
+        <h1>Cine Uwuntu — Editar película</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
             <a href="admin.php" class="btn-outline">Panel</a>
