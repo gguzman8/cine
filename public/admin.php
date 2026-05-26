@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/../src/config/database.php';
 require_once __DIR__ . '/../src/includes/session.php';
 require_once __DIR__ . '/../src/includes/functions.php';
 requerir_login();
@@ -8,13 +7,20 @@ if (!es_admin()) {
     redirect('index.php');
 }
 
-$total_usuarios  = $pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn();
-$total_compras   = $pdo->query('SELECT COUNT(*) FROM compras')->fetchColumn();
-$total_ingresos  = $pdo->query('SELECT COALESCE(SUM(total), 0) FROM compras')->fetchColumn();
-$total_peliculas = $pdo->query('SELECT COUNT(*) FROM peliculas')->fetchColumn();
-$total_boletos   = $pdo->query('SELECT COUNT(*) FROM detalle_compra')->fetchColumn();
+$pdo = null;
+try {
+    require_once __DIR__ . '/../src/config/database.php';
+} catch (\RuntimeException $e) {
+    // $pdo stays null; monitoring will reflect the outage
+}
 
-$ultimas_compras = $pdo->query(
+$total_usuarios  = $pdo ? $pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn() : 0;
+$total_compras   = $pdo ? $pdo->query('SELECT COUNT(*) FROM compras')->fetchColumn() : 0;
+$total_ingresos  = $pdo ? $pdo->query('SELECT COALESCE(SUM(total), 0) FROM compras')->fetchColumn() : 0;
+$total_peliculas = $pdo ? $pdo->query('SELECT COUNT(*) FROM peliculas')->fetchColumn() : 0;
+$total_boletos   = $pdo ? $pdo->query('SELECT COUNT(*) FROM detalle_compra')->fetchColumn() : 0;
+
+$ultimas_compras = $pdo ? $pdo->query(
     'SELECT c.id, u.nombre AS usuario, p.titulo, c.total, c.created_at
      FROM compras c
      JOIN usuarios u ON u.id = c.usuario_id
@@ -22,23 +28,56 @@ $ultimas_compras = $pdo->query(
      JOIN peliculas p ON p.id = f.pelicula_id
      ORDER BY c.created_at DESC
      LIMIT 10'
-)->fetchAll();
+)->fetchAll() : [];
 
-$funciones_hoy = $pdo->query(
+$funciones_hoy = $pdo ? $pdo->query(
     'SELECT f.*, p.titulo,
         (SELECT COUNT(*) FROM asientos a WHERE a.funcion_id = f.id AND a.disponible = TRUE) AS libres
      FROM funciones f
      JOIN peliculas p ON p.id = f.pelicula_id
      WHERE DATE(f.horario) = CURDATE()
      ORDER BY f.horario'
-)->fetchAll();
+)->fetchAll() : [];
 
-$cupones   = $pdo->query('SELECT * FROM cupones ORDER BY created_at DESC')->fetchAll();
-$peliculas = $pdo->query(
+// Métricas del servidor
+$load       = sys_getloadavg();
+$cpu_cores  = substr_count(file_get_contents('/proc/cpuinfo'), 'processor');
+$cpu_pct    = min(100, round($load[0] / max(1, $cpu_cores) * 100, 1));
+
+$mem = [];
+foreach (file('/proc/meminfo') as $line) {
+    [$k, $v] = explode(':', $line, 2);
+    $mem[trim($k)] = (int) trim($v);
+}
+$ram_total_mb = intdiv($mem['MemTotal'], 1024);
+$ram_used_mb  = intdiv($mem['MemTotal'] - $mem['MemAvailable'], 1024);
+$ram_pct      = round($ram_used_mb / $ram_total_mb * 100, 1);
+
+$disk_total_gb = round(disk_total_space('/') / (1024 ** 3), 1);
+$disk_free_gb  = round(disk_free_space('/') / (1024 ** 3), 1);
+$disk_used_gb  = round($disk_total_gb - $disk_free_gb, 1);
+$disk_pct      = round($disk_used_gb / $disk_total_gb * 100, 1);
+
+$uptime_raw = (int) explode(' ', file_get_contents('/proc/uptime'))[0];
+$uptime_str = sprintf('%dd %dh %dm',
+    intdiv($uptime_raw, 86400),
+    intdiv($uptime_raw % 86400, 3600),
+    intdiv($uptime_raw % 3600, 60)
+);
+
+$apache_ok = function_exists('shell_exec')
+    ? trim(shell_exec('systemctl is-active apache2 2>/dev/null') ?? '') === 'active'
+    : true;
+$mariadb_ok = function_exists('shell_exec')
+    ? trim(shell_exec('systemctl is-active mariadb 2>/dev/null') ?? '') === 'active'
+    : ($pdo !== null);
+
+$cupones   = $pdo ? $pdo->query('SELECT * FROM cupones ORDER BY created_at DESC')->fetchAll() : [];
+$peliculas = $pdo ? $pdo->query(
     'SELECT p.id, p.titulo, p.precio, p.poster, p.activa,
         (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id) AS funciones_count
      FROM peliculas p ORDER BY p.activa DESC, p.titulo'
-)->fetchAll();
+)->fetchAll() : [];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -53,12 +92,16 @@ $peliculas = $pdo->query(
         <h1>Cine Sendera — Admin</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
-            <a href="index.php">Cartelera</a>
-            <a href="logout.php">Cerrar sesión</a>
+            <a href="index.php" class="btn-outline">Cartelera</a>
+            <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>
         <h2>Panel de Administración</h2>
+
+        <?php if (!$pdo): ?>
+            <p class="error">Base de datos no disponible — mostrando solo métricas del sistema.</p>
+        <?php endif; ?>
 
         <section class="admin-stats">
             <div class="stat-card">
@@ -80,6 +123,45 @@ $peliculas = $pdo->query(
             <div class="stat-card">
                 <h3><?= $total_boletos ?></h3>
                 <p>Boletos vendidos</p>
+            </div>
+        </section>
+
+        <section>
+            <h3>Monitoreo del Servidor</h3>
+            <div class="monitor-grid">
+                <div class="monitor-card">
+                    <div class="monitor-label">CPU</div>
+                    <div class="monitor-value"><?= $cpu_pct ?>%</div>
+                    <div class="progress"><div class="progress-fill" style="width:<?= $cpu_pct ?>%;background:<?= $cpu_pct > 80 ? '#e50914' : ($cpu_pct > 50 ? '#ff9800' : '#4caf50') ?>;"></div></div>
+                    <div class="monitor-sub">Carga: <?= $load[0] ?> / <?= $load[1] ?> / <?= $load[2] ?> &bull; <?= $cpu_cores ?> núcleos</div>
+                </div>
+                <div class="monitor-card">
+                    <div class="monitor-label">RAM</div>
+                    <div class="monitor-value"><?= $ram_used_mb ?> MB / <?= $ram_total_mb ?> MB</div>
+                    <div class="progress"><div class="progress-fill" style="width:<?= $ram_pct ?>%;background:<?= $ram_pct > 80 ? '#e50914' : ($ram_pct > 50 ? '#ff9800' : '#4caf50') ?>;"></div></div>
+                    <div class="monitor-sub"><?= $ram_pct ?>% usado</div>
+                </div>
+                <div class="monitor-card">
+                    <div class="monitor-label">Disco</div>
+                    <div class="monitor-value"><?= $disk_used_gb ?> GB / <?= $disk_total_gb ?> GB</div>
+                    <div class="progress"><div class="progress-fill" style="width:<?= $disk_pct ?>%;background:<?= $disk_pct > 80 ? '#e50914' : ($disk_pct > 50 ? '#ff9800' : '#4caf50') ?>;"></div></div>
+                    <div class="monitor-sub"><?= $disk_pct ?>% usado &bull; <?= $disk_free_gb ?> GB libres</div>
+                </div>
+                <div class="monitor-card">
+                    <div class="monitor-label">Uptime</div>
+                    <div class="monitor-value"><?= $uptime_str ?></div>
+                    <div class="monitor-sub">Tiempo activo del sistema</div>
+                </div>
+                <div class="monitor-card">
+                    <div class="monitor-label">Apache</div>
+                    <div class="monitor-value <?= $apache_ok ? 'status-ok' : 'status-err' ?>"><?= $apache_ok ? 'Activo' : 'Inactivo' ?></div>
+                    <div class="monitor-sub"><span class="service-dot <?= $apache_ok ? 'dot-ok' : 'dot-err' ?>"></span> HTTP Server</div>
+                </div>
+                <div class="monitor-card">
+                    <div class="monitor-label">MariaDB</div>
+                    <div class="monitor-value <?= $mariadb_ok ? 'status-ok' : 'status-err' ?>"><?= $mariadb_ok ? 'Activo' : 'Inactivo' ?></div>
+                    <div class="monitor-sub"><span class="service-dot <?= $mariadb_ok ? 'dot-ok' : 'dot-err' ?>"></span> Base de datos</div>
+                </div>
             </div>
         </section>
 
@@ -190,40 +272,40 @@ $peliculas = $pdo->query(
             </table>
         </section>
 
-        <section class="form-container" style="max-width:100%;">
+        <section class="admin-form">
             <h3>Agregar Película</h3>
             <?php if (!empty($_SESSION['error_pelicula'])): ?>
                 <p class="error"><?= h($_SESSION['error_pelicula']); unset($_SESSION['error_pelicula']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_pelicula'])): ?>
-                <p style="color:#4caf50;margin-bottom:1rem;"><?= h($_SESSION['success_pelicula']); unset($_SESSION['success_pelicula']); ?></p>
+                <p class="success"><?= h($_SESSION['success_pelicula']); unset($_SESSION['success_pelicula']); ?></p>
             <?php endif; ?>
-            <form action="admin_pelicula_handler.php" method="POST" style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;">
+            <form action="admin_pelicula_handler.php" method="POST">
                 <label style="flex:2;min-width:200px;">Título
                     <input type="text" name="titulo" required>
                 </label>
                 <label style="flex:3;min-width:250px;">Sinopsis
                     <input type="text" name="sinopsis" placeholder="Descripción breve">
                 </label>
-                <label style="flex:1;min-width:100px;">Precio ($)
+                <label style="flex:1;min-width:120px;">Precio ($)
                     <input type="number" name="precio" step="0.01" min="1" required>
                 </label>
-                <label style="flex:1;min-width:120px;">Poster
+                <label style="flex:1;min-width:130px;">Poster
                     <input type="text" name="poster" placeholder="default.svg">
                 </label>
                 <button type="submit" class="btn">Crear película</button>
             </form>
         </section>
 
-        <section class="form-container" style="max-width:100%;">
+        <section class="admin-form">
             <h3 id="funciones">Agregar Función</h3>
             <?php if (!empty($_SESSION['error_funcion'])): ?>
                 <p class="error"><?= h($_SESSION['error_funcion']); unset($_SESSION['error_funcion']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_funcion'])): ?>
-                <p style="color:#4caf50;margin-bottom:1rem;"><?= h($_SESSION['success_funcion']); unset($_SESSION['success_funcion']); ?></p>
+                <p class="success"><?= h($_SESSION['success_funcion']); unset($_SESSION['success_funcion']); ?></p>
             <?php endif; ?>
-            <form action="admin_funcion_handler.php" method="POST" style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;">
+            <form action="admin_funcion_handler.php" method="POST">
                 <label style="flex:2;min-width:200px;">Película
                     <select name="pelicula_id" required>
                         <option value="">Seleccionar...</option>
@@ -232,35 +314,35 @@ $peliculas = $pdo->query(
                         <?php endforeach; unset($_SESSION['nueva_pelicula_id']); ?>
                     </select>
                 </label>
-                <label style="flex:1;min-width:160px;">Horario
+                <label style="flex:1;min-width:180px;">Horario
                     <input type="datetime-local" name="horario" required>
                 </label>
                 <label style="flex:1;min-width:120px;">Sala
                     <input type="text" name="sala" placeholder="Sala 1" required>
                 </label>
-                <label style="flex:0;min-width:100px;white-space:nowrap;">
+                <label class="check">
                     <input type="checkbox" name="es_matinee" value="1"> Matiné
                 </label>
                 <button type="submit" class="btn">Agregar función</button>
             </form>
         </section>
 
-        <section class="form-container" style="max-width:100%;">
+        <section class="admin-form">
             <h3>Registrar Staff</h3>
             <?php if (!empty($_SESSION['error_staff'])): ?>
                 <p class="error"><?= h($_SESSION['error_staff']); unset($_SESSION['error_staff']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_staff'])): ?>
-                <p style="color:#4caf50;margin-bottom:1rem;"><?= h($_SESSION['success_staff']); unset($_SESSION['success_staff']); ?></p>
+                <p class="success"><?= h($_SESSION['success_staff']); unset($_SESSION['success_staff']); ?></p>
             <?php endif; ?>
-            <form action="admin_staff_handler.php" method="POST" style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;">
+            <form action="admin_staff_handler.php" method="POST">
                 <label style="flex:1;min-width:180px;">Nombre
                     <input type="text" name="nombre" required>
                 </label>
                 <label style="flex:1;min-width:200px;">Correo
                     <input type="email" name="email" required>
                 </label>
-                <label style="flex:1;min-width:160px;">Contraseña
+                <label style="flex:1;min-width:180px;">Contraseña
                     <input type="password" name="password" minlength="6" required>
                 </label>
                 <button type="submit" class="btn">Crear staff</button>

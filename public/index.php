@@ -26,15 +26,15 @@ $peliculas = $pdo->query(
             <?php if (esta_logueado()): ?>
                 <span><?= h($_SESSION['usuario_nombre']) ?></span>
                 <?php if (es_admin()): ?>
-                    <a href="admin.php">Panel Admin</a>
+                    <a href="admin.php" class="btn-outline">Panel Admin</a>
                 <?php endif; ?>
                 <?php if (es_staff()): ?>
-                    <a href="staff/vender.php">Vender boletos</a>
+                    <a href="staff/vender.php" class="btn-outline">Vender boletos</a>
                 <?php endif; ?>
-                <a href="logout.php">Cerrar sesión</a>
+                <a href="logout.php" class="btn-muted">Cerrar sesión</a>
             <?php else: ?>
-                <a href="login.php">Iniciar sesión</a>
-                <a href="register.php">Registrarse</a>
+                <a href="login.php" class="btn-outline">Iniciar sesión</a>
+                <a href="register.php" class="btn">Registrarse</a>
             <?php endif; ?>
         </nav>
     </header>

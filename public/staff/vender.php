@@ -24,8 +24,8 @@ $peliculas = $pdo->query(
         <h1>Cine Sendera — Staff</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?> (vendedor)</span>
-            <a href="../index.php">Cartelera</a>
-            <a href="../logout.php">Cerrar sesión</a>
+            <a href="../index.php" class="btn-outline">Cartelera</a>
+            <a href="../logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>
