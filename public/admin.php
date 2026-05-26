@@ -35,7 +35,7 @@ $funciones_hoy = $pdo ? $pdo->query(
         (SELECT COUNT(*) FROM asientos a WHERE a.funcion_id = f.id AND a.disponible = TRUE) AS libres
      FROM funciones f
      JOIN peliculas p ON p.id = f.pelicula_id
-     WHERE DATE(f.horario) = CURDATE() AND f.expirada = FALSE
+     WHERE DATE(f.horario) = CURDATE()
      ORDER BY f.horario'
 )->fetchAll() : [];
 
@@ -75,7 +75,7 @@ $mariadb_ok = function_exists('shell_exec')
 $cupones   = $pdo ? $pdo->query('SELECT * FROM cupones ORDER BY created_at DESC')->fetchAll() : [];
 $peliculas = $pdo ? $pdo->query(
     'SELECT p.id, p.titulo, p.precio, p.poster, p.activa,
-        (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id AND f.expirada = FALSE) AS funciones_count
+        (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id) AS funciones_count
      FROM peliculas p ORDER BY p.activa DESC, p.titulo'
 )->fetchAll() : [];
 ?>
@@ -178,15 +178,15 @@ $peliculas = $pdo ? $pdo->query(
                             <td><?= date('H:i', strtotime($f['horario'])) ?></td>
                             <td><?= h($f['sala']) ?></td>
                             <td><?= $f['libres'] ?>/40</td>
-                            <td><?= $f['es_matinee'] ? '✅' : '—' ?></td>
+                            <td><?= $f['es_matinee'] ? 'Sí' : 'No' ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </section>
-        
+
         <section>
-            <h3 class="section-title">🧾 Últimas Compras <span class="count"><?= count($ultimas_compras) ?></span></h3>
+            <h3>Últimas Compras</h3>
             <table>
                 <thead>
                     <tr><th>#</th><th>Usuario</th><th>Película</th><th>Total</th><th>Fecha</th></tr>
@@ -197,16 +197,16 @@ $peliculas = $pdo ? $pdo->query(
                             <td><?= $c['id'] ?></td>
                             <td><?= h($c['usuario']) ?></td>
                             <td><?= h($c['titulo']) ?></td>
-                            <td><strong>$<?= number_format($c['total'], 2) ?></strong></td>
+                            <td>$<?= number_format($c['total'], 2) ?></td>
                             <td><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </section>
-        
+
         <section>
-            <h3 class="section-title">👥 Usuarios Registrados <span class="count"><?= $total_usuarios ?? 0 ?></span></h3>
+            <h3>Usuarios Registrados</h3>
             <table>
                 <thead>
                     <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Registro</th></tr>
@@ -217,7 +217,7 @@ $peliculas = $pdo ? $pdo->query(
                             <td><?= $u['id'] ?></td>
                             <td><?= h($u['nombre']) ?></td>
                             <td><?= h($u['email']) ?></td>
-                            <td><span class="badge <?= match($u['rol']) { 'admin' => 'badge-red', 'vendedor' => 'badge-yellow', default => 'badge-blue' } ?>"><?= h($u['rol']) ?></span></td>
+                            <td><?= h($u['rol']) ?></td>
                             <td><?= date('d/m/Y', strtotime($u['created_at'])) ?></td>
                         </tr>
                     <?php endforeach; ?>
@@ -226,19 +226,19 @@ $peliculas = $pdo ? $pdo->query(
         </section>
 
         <section>
-            <h3 class="section-title">🏷️ Cupones de Descuento <span class="count"><?= count($cupones) ?></span></h3>
+            <h3>Cupones de Descuento</h3>
             <table>
                 <thead>
-                    <tr><th>Código</th><th>Descuento</th><th>Usos</th><th>Máximo</th><th>Estado</th></tr>
+                    <tr><th>Código</th><th>Descuento</th><th>Usos</th><th>Máximo</th><th>Activo</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($cupones as $cp): ?>
                         <tr>
-                            <td><strong><?= h($cp['codigo']) ?></strong></td>
-                            <td><span class="badge badge-green"><?= $cp['descuento_porcentaje'] ?>%</span></td>
+                            <td><?= h($cp['codigo']) ?></td>
+                            <td><?= $cp['descuento_porcentaje'] ?>%</td>
                             <td><?= $cp['usos_actuales'] ?></td>
                             <td><?= $cp['usos_maximos'] ?></td>
-                            <td><span class="status-dot <?= $cp['activo'] ? 'status-on' : 'status-off' ?>"></span><span class="badge <?= $cp['activo'] ? 'badge-green' : 'badge-gray' ?>"><?= $cp['activo'] ? 'Activo' : 'Inactivo' ?></span></td>
+                            <td><?= $cp['activo'] ? 'Sí' : 'No' ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -246,27 +246,25 @@ $peliculas = $pdo ? $pdo->query(
         </section>
 
         <section>
-            <h3 class="section-title" id="peliculas">🎬 Películas Registradas <span class="count"><?= count($peliculas) ?></span></h3>
+            <h3 id="peliculas">Películas Registradas</h3>
             <table>
                 <thead>
-                    <tr><th>ID</th><th>Título</th><th>Precio</th><th>Funciones</th><th>Estado</th><th>Acciones</th></tr>
+                    <tr><th>ID</th><th>Título</th><th>Precio</th><th>Funciones</th><th>Activa</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($peliculas as $p): ?>
-                        <tr class="<?= !$p['activa'] ? 'row-disabled' : '' ?>">
+                        <tr style="<?= !$p['activa'] ? 'opacity:.5;' : '' ?>">
                             <td><?= $p['id'] ?></td>
                             <td><?= h($p['titulo']) ?></td>
                             <td>$<?= number_format($p['precio'], 2) ?></td>
                             <td><?= $p['funciones_count'] ?></td>
-                            <td><span class="status-dot <?= $p['activa'] ? 'status-on' : 'status-off' ?>"></span><span class="badge <?= $p['activa'] ? 'badge-green' : 'badge-gray' ?>"><?= $p['activa'] ? 'Activa' : 'Inactiva' ?></span></td>
-                            <td>
-                                <div class="actions">
-                                    <a href="admin_pelicula_edit.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-edit">✏️ Editar</a>
-                                    <a href="admin_pelicula_toggle_handler.php?id=<?= $p['id'] ?>" class="btn btn-sm <?= $p['activa'] ? 'btn-toggle-off' : 'btn-toggle-on' ?>"><?= $p['activa'] ? '🚫 Desactivar' : '✅ Activar' ?></a>
-                                    <?php if ($p['funciones_count'] == 0): ?>
-                                        <a href="admin_pelicula_delete_handler.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-delete" onclick="return confirm('¿Eliminar <?= h($p['titulo']) ?>?')">🗑️ Eliminar</a>
-                                    <?php endif; ?>
-                                </div>
+                            <td><?= $p['activa'] ? '✅' : '❌' ?></td>
+                            <td style="white-space:nowrap;">
+                                <a href="admin_pelicula_edit.php?id=<?= $p['id'] ?>" class="btn" style="padding:.3rem .6rem;font-size:.8rem;">✏️ Editar</a>
+                                <a href="admin_pelicula_toggle_handler.php?id=<?= $p['id'] ?>" class="btn" style="padding:.3rem .6rem;font-size:.8rem;background:#ff9800;"><?= $p['activa'] ? '🚫 Desactivar' : '✅ Activar' ?></a>
+                                <?php if ($p['funciones_count'] == 0): ?>
+                                    <a href="admin_pelicula_delete_handler.php?id=<?= $p['id'] ?>" class="btn" style="padding:.3rem .6rem;font-size:.8rem;background:#666;" onclick="return confirm('¿Eliminar <?= h($p['titulo']) ?>?')">🗑️ Eliminar</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -277,7 +275,7 @@ $peliculas = $pdo ? $pdo->query(
         <section class="admin-form">
             <h3>Agregar Película</h3>
             <?php if (!empty($_SESSION['error_pelicula'])): ?>
-                <p class="alert alert-error"><?= h($_SESSION['error_pelicula']); unset($_SESSION['error_pelicula']); ?></p>
+                <p class="error"><?= h($_SESSION['error_pelicula']); unset($_SESSION['error_pelicula']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_pelicula'])): ?>
                 <p class="success"><?= h($_SESSION['success_pelicula']); unset($_SESSION['success_pelicula']); ?></p>
@@ -302,7 +300,7 @@ $peliculas = $pdo ? $pdo->query(
         <section class="admin-form">
             <h3 id="funciones">Agregar Función</h3>
             <?php if (!empty($_SESSION['error_funcion'])): ?>
-                <p class="alert alert-error"><?= h($_SESSION['error_funcion']); unset($_SESSION['error_funcion']); ?></p>
+                <p class="error"><?= h($_SESSION['error_funcion']); unset($_SESSION['error_funcion']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_funcion'])): ?>
                 <p class="success"><?= h($_SESSION['success_funcion']); unset($_SESSION['success_funcion']); ?></p>
@@ -332,7 +330,7 @@ $peliculas = $pdo ? $pdo->query(
         <section class="admin-form">
             <h3>Registrar Staff</h3>
             <?php if (!empty($_SESSION['error_staff'])): ?>
-                <p class="alert alert-error"><?= h($_SESSION['error_staff']); unset($_SESSION['error_staff']); ?></p>
+                <p class="error"><?= h($_SESSION['error_staff']); unset($_SESSION['error_staff']); ?></p>
             <?php endif; ?>
             <?php if (!empty($_SESSION['success_staff'])): ?>
                 <p class="success"><?= h($_SESSION['success_staff']); unset($_SESSION['success_staff']); ?></p>
