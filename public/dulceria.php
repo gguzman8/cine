@@ -13,12 +13,12 @@ $checkin_pendientes = $pdo->query('SELECT COUNT(*) FROM compras WHERE checkin_at
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dulcería - Cine Sendera</title>
+    <title>Dulcería - Cine Uwuntu</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera — Dulcería</h1>
+        <h1>Cine Uwuntu — Dulcería</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
             <?php if (!es_staff() && !es_admin()): ?>

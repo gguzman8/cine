@@ -1,4 +1,4 @@
-# Manual de Red — Cine Sendera
+# Manual de Red — Cine Uwuntu
 
 ## Topología
 
@@ -52,7 +52,7 @@ Se recomienda usar IP fija en el servidor para consistencia.*
 
 ## Acceso a la Plataforma
 
-- **URL Web:** `http://192.168.1.100` (o `http://cine.sendera.local` si está configurado DNS)
+- **URL Web:** `http://192.168.1.100` (o `http://cine.Uwuntu.local` si está configurado DNS)
 - **SSH:** `ssh -p 2222 usuario@192.168.1.100`
 - **Admin panel:** `http://192.168.1.100/admin.php`
 - **Dulcería:** `http://192.168.1.100/dulceria.php`

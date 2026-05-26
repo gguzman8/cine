@@ -1,5 +1,5 @@
 # ============================================================
-# Crontab — Cine Sendera
+# Crontab — Cine Uwuntu
 # ============================================================
 # Instalar: crontab crontab.txt
 # Ver:      crontab -l

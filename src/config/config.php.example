@@ -13,8 +13,8 @@ define('DB_USER', 'cine_user');
 define('DB_PASS', 'cine_pass');
 
 // Aplicación
-define('SITE_NAME', 'Cine Sendera');
-define('SITE_URL', 'http://cine.sendera.local');
+define('SITE_NAME', 'Cine Uwuntu');
+define('SITE_URL', 'http://cine.Uwuntu.local');
 
 // Matiné: descuento aplicado a funciones antes de 12:00 entre semana
 define('MATINEE_DESCUENTO', 30); // porcentaje

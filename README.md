@@ -1,4 +1,4 @@
-# Cine Sendera — Sistema de Ventas de Boletos
+# Cine Uwuntu — Sistema de Ventas de Boletos
 
 Aplicación web LAMP (Linux, Apache, MySQL, PHP 8) con panel admin, ventas staff, check-in digital, mapa interactivo de asientos, API REST, automatización Bash y hardening de seguridad.
 

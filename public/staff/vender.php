@@ -36,12 +36,12 @@ $funciones = $pdo->query(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vender boletos - Cine Sendera</title>
+    <title>Vender boletos - Cine Uwuntu</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera — Staff</h1>
+        <h1>Cine Uwuntu — Staff</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?> (vendedor)</span>
             <a href="vender.php" class="btn-outline">Vender</a>

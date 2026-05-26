@@ -52,12 +52,12 @@ if ($compra_id > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check-in - Cine Sendera</title>
+    <title>Check-in - Cine Uwuntu</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <header>
-        <h1>Cine Sendera — Check-in</h1>
+        <h1>Cine Uwuntu — Check-in</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?> (<?= h($_SESSION['usuario_rol']) ?>)</span>
             <a href="vender.php" class="btn-outline">Vender</a>
