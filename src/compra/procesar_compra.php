@@ -6,12 +6,12 @@ require_once __DIR__ . '/../includes/functions.php';
 requerir_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('../../public/compra.php');
+    redirect('/compra.php');
 }
 
 if (!verificar_csrf($_POST['csrf_token'] ?? '')) {
     $_SESSION['error'] = 'Token CSRF inválido.';
-    redirect('../../public/compra.php');
+    redirect('/compra.php');
 }
 
 $funcion_id  = (int) ($_POST['funcion_id'] ?? 0);
@@ -21,7 +21,7 @@ $cupon_codigo = trim($_POST['cupon'] ?? '');
 
 if ($funcion_id <= 0 || $cantidad <= 0 || $cantidad > 10) {
     $_SESSION['error'] = 'Datos de compra inválidos.';
-    redirect("../../public/compra.php?pelicula_id=$pelicula_id");
+    redirect("/compra.php?pelicula_id=$pelicula_id");
 }
 
 try {
@@ -98,10 +98,10 @@ try {
     $pdo->commit();
 
     $_SESSION['compra_exitosa'] = $compra_id;
-    redirect("../../public/ticket.php?compra_id=$compra_id");
+    redirect("/ticket.php?compra_id=$compra_id");
 
 } catch (Exception $e) {
     $pdo->rollBack();
     $_SESSION['error'] = $e->getMessage();
-    redirect("../../public/compra.php?pelicula_id=$pelicula_id");
+    redirect("/compra.php?pelicula_id=$pelicula_id");
 }

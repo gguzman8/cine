@@ -7,6 +7,7 @@ $peliculas = $pdo->query(
     'SELECT p.*, COUNT(f.id) AS funciones_count
      FROM peliculas p
      LEFT JOIN funciones f ON f.pelicula_id = p.id
+     WHERE p.activa = TRUE
      GROUP BY p.id'
 )->fetchAll();
 ?>
@@ -25,7 +26,10 @@ $peliculas = $pdo->query(
             <?php if (esta_logueado()): ?>
                 <span><?= h($_SESSION['usuario_nombre']) ?></span>
                 <?php if (es_admin()): ?>
-                    <a href="admin.php">Panel</a>
+                    <a href="admin.php">Panel Admin</a>
+                <?php endif; ?>
+                <?php if (es_staff()): ?>
+                    <a href="staff/vender.php">Vender boletos</a>
                 <?php endif; ?>
                 <a href="logout.php">Cerrar sesión</a>
             <?php else: ?>

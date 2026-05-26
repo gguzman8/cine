@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS peliculas (
     sinopsis   TEXT,
     poster     VARCHAR(255)    NOT NULL DEFAULT 'default.svg',
     precio     DECIMAL(10,2)   NOT NULL,
+    activa     BOOLEAN         NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

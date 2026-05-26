@@ -48,7 +48,7 @@ $funciones = $funciones->fetchAll();
             <p class="error"><?= h($_SESSION['error']); unset($_SESSION['error']); ?></p>
         <?php endif; ?>
 
-        <form action="../src/compra/procesar_compra.php" method="POST">
+        <form action="procesar_compra.php" method="POST">
             <input type="hidden" name="pelicula_id" value="<?= $pelicula['id'] ?>">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 

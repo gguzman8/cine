@@ -18,6 +18,11 @@ function redirect(string $url): void {
     exit;
 }
 
+function redirect_abs(string $url): void {
+    header("Location: /$url");
+    exit;
+}
+
 function h(?string $s): string {
     return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8');
 }
