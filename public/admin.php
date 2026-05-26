@@ -70,8 +70,8 @@ $uptime_str = sprintf('%dd %dh %dm',
 $apache_ok = function_exists('shell_exec')
     ? trim(shell_exec('systemctl is-active apache2 2>/dev/null') ?? '') === 'active'
     : true;
-$mariadb_ok = function_exists('shell_exec')
-    ? trim(shell_exec('systemctl is-active mariadb 2>/dev/null') ?? '') === 'active'
+$mysql_ok = function_exists('shell_exec')
+    ? trim(shell_exec('systemctl is-active mysql 2>/dev/null') ?? '') === 'active'
     : ($pdo !== null);
 
 $todas_funciones = $pdo ? $pdo->query(
@@ -174,9 +174,9 @@ $peliculas = $pdo ? $pdo->query(
                     <div class="monitor-sub"><span class="service-dot <?= $apache_ok ? 'dot-ok' : 'dot-err' ?>"></span> HTTP Server</div>
                 </div>
                 <div class="monitor-card">
-                    <div class="monitor-label">MariaDB</div>
-                    <div class="monitor-value <?= $mariadb_ok ? 'status-ok' : 'status-err' ?>"><?= $mariadb_ok ? 'Activo' : 'Inactivo' ?></div>
-                    <div class="monitor-sub"><span class="service-dot <?= $mariadb_ok ? 'dot-ok' : 'dot-err' ?>"></span> Base de datos</div>
+                    <div class="monitor-label">MySQL</div>
+                    <div class="monitor-value <?= $mysql_ok ? 'status-ok' : 'status-err' ?>"><?= $mysql_ok ? 'Activo' : 'Inactivo' ?></div>
+                    <div class="monitor-sub"><span class="service-dot <?= $mysql_ok ? 'dot-ok' : 'dot-err' ?>"></span> Base de datos</div>
                 </div>
             </div>
         </section>
