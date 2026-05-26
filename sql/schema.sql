@@ -106,7 +106,54 @@ CREATE TABLE IF NOT EXISTS api_tokens (
     INDEX idx_token (token)
 ) ENGINE=InnoDB;
 
--- ─── 9. STORED PROCEDURE: generar_asientos ───────────────────
+-- ─── 9. TABLA: productos (dulcería) ───────────────────────────
+CREATE TABLE IF NOT EXISTS productos (
+    id          INT             AUTO_INCREMENT PRIMARY KEY,
+    nombre      VARCHAR(200)    NOT NULL,
+    descripcion TEXT,
+    precio      DECIMAL(10,2)   NOT NULL,
+    activa      BOOLEAN         NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ─── 10. TABLA: dulceria_compras ─────────────────────────────
+CREATE TABLE IF NOT EXISTS dulceria_compras (
+    id              INT             AUTO_INCREMENT PRIMARY KEY,
+    usuario_id      INT             NOT NULL,
+    cliente_nombre  VARCHAR(255)    NOT NULL,
+    vendedor_nombre VARCHAR(255)    NOT NULL DEFAULT 'Sistema',
+    para_llevar     BOOLEAN         NOT NULL DEFAULT FALSE,
+    boleto_id       INT             DEFAULT NULL,
+    entregado       BOOLEAN         NOT NULL DEFAULT FALSE,
+    total           DECIMAL(10,2)   NOT NULL,
+    created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ─── 11. TABLA: dulceria_detalle ─────────────────────────────
+CREATE TABLE IF NOT EXISTS dulceria_detalle (
+    id          INT             AUTO_INCREMENT PRIMARY KEY,
+    compra_id   INT             NOT NULL,
+    producto_id INT             NOT NULL,
+    cantidad    INT             NOT NULL DEFAULT 1,
+    precio      DECIMAL(10,2)   NOT NULL,
+    FOREIGN KEY (compra_id) REFERENCES dulceria_compras(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+ALTER TABLE productos ADD COLUMN activa BOOLEAN NOT NULL DEFAULT TRUE AFTER precio;
+
+-- ─── DATOS DE PRUEBA: productos ──────────────────────────────
+INSERT INTO productos (nombre, descripcion, precio, activa) VALUES
+('Palomitas Grandes', 'Palomitas de maíz con mantequilla, tamaño familiar', 85.00),
+('Palomitas Medianas', 'Palomitas de maíz con mantequilla, tamaño mediano', 65.00),
+('Refresco Grande', 'Refresco de cola sabor original, 1L', 55.00),
+('Refresco Mediano', 'Refresco de cola sabor original, 500ml', 40.00),
+('Nachos con Queso', 'Nachos crujientes bañados en queso cheddar', 70.00),
+('Hot Dog', 'Pan con salchicha, acompañado de papas fritas', 60.00),
+('Dulces Mix', 'Combo de dulces variados para compartir', 45.00);
+
+-- ─── 12. STORED PROCEDURE: generar_asientos ──────────────────
 -- Genera 40 asientos (5 filas x 8 columnas) para una función.
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS generar_asientos(IN p_funcion_id INT)

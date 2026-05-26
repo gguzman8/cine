@@ -15,11 +15,12 @@ try {
     // $pdo stays null; monitoring will reflect the outage
 }
 
-$total_usuarios  = $pdo ? $pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn() : 0;
-$total_compras   = $pdo ? $pdo->query('SELECT COUNT(*) FROM compras')->fetchColumn() : 0;
-$total_ingresos  = $pdo ? $pdo->query('SELECT COALESCE(SUM(total), 0) FROM compras')->fetchColumn() : 0;
-$total_peliculas = $pdo ? $pdo->query('SELECT COUNT(*) FROM peliculas')->fetchColumn() : 0;
-$total_boletos   = $pdo ? $pdo->query('SELECT COUNT(*) FROM detalle_compra')->fetchColumn() : 0;
+$total_usuarios   = $pdo ? $pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn() : 0;
+$total_peliculas  = $pdo ? $pdo->query('SELECT COUNT(*) FROM peliculas')->fetchColumn() : 0;
+$total_boletos    = $pdo ? $pdo->query('SELECT COUNT(*) FROM detalle_compra')->fetchColumn() : 0;
+$total_compras    = $pdo ? $pdo->query('SELECT (SELECT COUNT(*) FROM compras) + (SELECT COUNT(*) FROM dulceria_compras)')->fetchColumn() : 0;
+$total_ingresos   = $pdo ? $pdo->query("SELECT COALESCE((SELECT SUM(total) FROM compras), 0) + COALESCE((SELECT SUM(total) FROM dulceria_compras), 0)")->fetchColumn() : 0;
+$total_dulceria   = $pdo ? $pdo->query('SELECT COUNT(*) FROM dulceria_detalle')->fetchColumn() : 0;
 
 $ultimas_compras = $pdo ? $pdo->query(
     'SELECT c.id, u.nombre AS usuario, p.titulo, c.total, c.created_at
@@ -73,7 +74,17 @@ $mariadb_ok = function_exists('shell_exec')
     ? trim(shell_exec('systemctl is-active mariadb 2>/dev/null') ?? '') === 'active'
     : ($pdo !== null);
 
+$todas_funciones = $pdo ? $pdo->query(
+    "SELECT f.id, f.horario, f.sala, f.es_matinee, f.expirada, p.titulo,
+        COALESCE((SELECT COUNT(dc.id) FROM compras c JOIN detalle_compra dc ON dc.compra_id = c.id WHERE c.funcion_id = f.id), 0) AS boletos_vendidos,
+        COALESCE((SELECT SUM(c.total) FROM compras c WHERE c.funcion_id = f.id), 0) AS ingresos
+     FROM funciones f
+     JOIN peliculas p ON p.id = f.pelicula_id
+     ORDER BY f.horario DESC"
+)->fetchAll() : [];
+
 $cupones   = $pdo ? $pdo->query('SELECT * FROM cupones ORDER BY created_at DESC')->fetchAll() : [];
+$productos = $pdo ? $pdo->query('SELECT * FROM productos ORDER BY activa DESC, nombre')->fetchAll() : [];
 $peliculas = $pdo ? $pdo->query(
     'SELECT p.id, p.titulo, p.precio, p.poster, p.activa,
         (SELECT COUNT(*) FROM funciones f WHERE f.pelicula_id = p.id AND f.expirada = FALSE) AS funciones_count
@@ -93,6 +104,7 @@ $peliculas = $pdo ? $pdo->query(
         <h1>Cine Sendera — Admin</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
+            <a href="dulceria.php" class="btn-outline">Dulcería</a>
             <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
@@ -114,7 +126,7 @@ $peliculas = $pdo ? $pdo->query(
             </div>
             <div class="stat-card">
                 <h3><?= $total_compras ?></h3>
-                <p>Compras</p>
+                <p>Compras totales</p>
             </div>
             <div class="stat-card">
                 <h3>$<?= number_format($total_ingresos, 2) ?></h3>
@@ -123,6 +135,10 @@ $peliculas = $pdo ? $pdo->query(
             <div class="stat-card">
                 <h3><?= $total_boletos ?></h3>
                 <p>Boletos vendidos</p>
+            </div>
+            <div class="stat-card">
+                <h3><?= $total_dulceria ?></h3>
+                <p>Productos dulcería</p>
             </div>
         </section>
 
@@ -185,6 +201,28 @@ $peliculas = $pdo ? $pdo->query(
             </table>
         </section>
         
+        <section>
+            <h3 class="section-title">📋 Todas las Funciones <span class="count"><?= count($todas_funciones) ?></span></h3>
+            <table>
+                <thead>
+                    <tr><th>Película</th><th>Horario</th><th>Sala</th><th>Matiné</th><th>Boletos vendidos</th><th>Ingresos</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($todas_funciones as $f): ?>
+                        <tr class="<?= $f['expirada'] ? 'row-disabled' : '' ?>">
+                            <td><?= h($f['titulo']) ?></td>
+                            <td><?= date('d/m/Y H:i', strtotime($f['horario'])) ?></td>
+                            <td><?= h($f['sala']) ?></td>
+                            <td><?= $f['es_matinee'] ? '✅ Sí' : '—' ?></td>
+                            <td><?= $f['boletos_vendidos'] ?>/40</td>
+                            <td><strong>$<?= number_format($f['ingresos'], 2) ?></strong></td>
+                            <td><span class="badge <?= $f['expirada'] ? 'badge-gray' : 'badge-green' ?>"><?= $f['expirada'] ? 'Expirada' : 'Activa' ?></span></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </section>
+
         <section>
             <h3 class="section-title">🧾 Últimas Compras <span class="count"><?= count($ultimas_compras) ?></span></h3>
             <table>
@@ -296,6 +334,50 @@ $peliculas = $pdo ? $pdo->query(
                     <input type="text" name="poster" placeholder="default.svg">
                 </label>
                 <button type="submit" class="btn">Crear película</button>
+            </form>
+        </section>
+
+        <section id="dulceria">
+            <h3 class="section-title">🍿 Productos de Dulcería <span class="count"><?= count($productos) ?></span></h3>
+            <?php if (!empty($_SESSION['error_producto'])): ?>
+                <p class="alert alert-error"><?= h($_SESSION['error_producto']); unset($_SESSION['error_producto']); ?></p>
+            <?php endif; ?>
+            <?php if (!empty($_SESSION['success_producto'])): ?>
+                <p class="alert alert-success"><?= h($_SESSION['success_producto']); unset($_SESSION['success_producto']); ?></p>
+            <?php endif; ?>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($productos as $pr): ?>
+                        <tr class="<?= !$pr['activa'] ? 'row-disabled' : '' ?>">
+                            <td><?= $pr['id'] ?></td>
+                            <td><?= h($pr['nombre']) ?></td>
+                            <td>$<?= number_format($pr['precio'], 2) ?></td>
+                            <td><span class="badge <?= $pr['activa'] ? 'badge-green' : 'badge-gray' ?>"><?= $pr['activa'] ? 'Activo' : 'Inactivo' ?></span></td>
+                            <td>
+                                <div class="actions">
+                                    <a href="admin_producto_edit.php?id=<?= $pr['id'] ?>" class="btn btn-sm btn-edit">✏️ Editar</a>
+                                    <a href="admin_producto_toggle_handler.php?id=<?= $pr['id'] ?>" class="btn btn-sm <?= $pr['activa'] ? 'btn-toggle-off' : 'btn-toggle-on' ?>"><?= $pr['activa'] ? '🚫 Desactivar' : '✅ Activar' ?></a>
+                                    <a href="admin_producto_delete_handler.php?id=<?= $pr['id'] ?>" class="btn btn-sm btn-delete" onclick="return confirm('¿Eliminar <?= h($pr['nombre']) ?>?')">🗑️ Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <form action="admin_producto_handler.php" method="POST" class="form-stacked" style="margin-top:1rem;">
+                <label>Nombre del producto
+                    <input type="text" name="nombre" required placeholder="Ej: Palomitas Grandes">
+                </label>
+                <label>Descripción
+                    <input type="text" name="descripcion" placeholder="Descripción breve">
+                </label>
+                <label>Precio ($)
+                    <input type="number" name="precio" step="0.01" min="1" required>
+                </label>
+                <button type="submit" class="btn">Agregar producto</button>
             </form>
         </section>
 

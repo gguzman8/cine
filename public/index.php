@@ -39,8 +39,10 @@ $funciones = $pdo->query(
                 <?php if (es_staff()): ?>
                     <a href="staff/vender.php" class="btn-outline">Vender boletos</a>
                 <?php endif; ?>
+                <a href="dulceria.php" class="btn-outline">Dulcería</a>
                 <a href="logout.php" class="btn-muted">Cerrar sesión</a>
             <?php else: ?>
+                <a href="dulceria.php" class="btn-outline">Dulcería</a>
                 <a href="login.php" class="btn-outline">Iniciar sesión</a>
                 <a href="register.php" class="btn">Registrarse</a>
             <?php endif; ?>
