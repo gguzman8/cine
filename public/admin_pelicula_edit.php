@@ -27,8 +27,8 @@ if (!$p) {
         <h1>Cine Sendera — Editar película</h1>
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
-            <a href="admin.php">Panel</a>
-            <a href="logout.php">Cerrar sesión</a>
+            <a href="admin.php" class="btn-outline">Panel</a>
+            <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
     <main>
