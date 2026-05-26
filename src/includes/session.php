@@ -15,9 +15,21 @@ function es_admin(): bool {
     return ($_SESSION['usuario_rol'] ?? '') === 'admin';
 }
 
+function es_staff(): bool {
+    return ($_SESSION['usuario_rol'] ?? '') === 'vendedor';
+}
+
 function requerir_login(): void {
     if (!esta_logueado()) {
         header('Location: /login.php');
+        exit;
+    }
+}
+
+function requerir_rol(string ...$roles): void {
+    requerir_login();
+    if (!in_array($_SESSION['usuario_rol'] ?? '', $roles, true)) {
+        header('Location: /index.php');
         exit;
     }
 }

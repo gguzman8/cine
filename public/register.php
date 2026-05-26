@@ -16,7 +16,7 @@ require_once __DIR__ . '/../src/includes/functions.php';
         <?php if (!empty($_SESSION['error'])): ?>
             <p class="error"><?= h($_SESSION['error']); unset($_SESSION['error']); ?></p>
         <?php endif; ?>
-        <form action="../src/auth/register_handler.php" method="POST">
+        <form action="register_handler.php" method="POST">
             <label>Nombre
                 <input type="text" name="nombre" required>
             </label>
