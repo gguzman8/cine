@@ -105,6 +105,7 @@ $peliculas = $pdo ? $pdo->query(
         <nav>
             <span><?= h($_SESSION['usuario_nombre']) ?></span>
             <a href="dulceria.php" class="btn-outline">Dulcería</a>
+            <a href="perfil.php" class="btn-outline">Mi Perfil</a>
             <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>

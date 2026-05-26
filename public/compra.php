@@ -48,6 +48,7 @@ $checkin_pendientes = $pdo->query('SELECT COUNT(*) FROM compras WHERE checkin_at
                 <a href="staff/vender.php" class="btn-outline">Vender</a>
                 <a href="staff/checkin.php" class="btn-outline">Check-in <span class="badge badge-yellow"><?= $checkin_pendientes ?></span></a>
             <?php endif; ?>
+            <a href="perfil.php" class="btn-outline">Mi Perfil</a>
             <a href="logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>

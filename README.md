@@ -9,7 +9,8 @@ Aplicación web LAMP (Linux, Apache, MySQL, PHP 8) con panel admin, ventas staff
 - **Descuento matiné:** 30% off si la compra se realiza antes de las 12:00
 - **Cupones de descuento:** Códigos promocionales con límite de usos
 - **Check-in digital:** Staff registra la entrada del cliente por ID de compra o desde el ticket
-- **Panel admin:** CRUD de películas/funciones/staff, monitoreo de servidor (CPU, RAM, disco, uptime, servicios), gestión de cupones
+- **Panel admin:** CRUD de películas/funciones/staff/productos, monitoreo de servidor (CPU, RAM, disco, uptime, servicios), gestión de cupones, tabla de todas las funciones con boletos vendidos e ingresos
+- **Dulcería:** Catálogo de productos con compra en línea y para llevar, entrega registrada por staff, productos editables y activables/desactivables desde admin
 - **API REST:** 8 endpoints con autenticación Bearer
 - **Transacciones SQL con FOR UPDATE:** Evita condiciones de carrera en compra y check-in
 - **Limpieza automática:** Funciones expiradas se marcan automáticamente (cada carga + cron cada 15 min)
@@ -45,15 +46,21 @@ cine/
 │   ├── logout.php                 # Cierre de sesión
 │   ├── admin.php                  # Dashboard admin + CRUD
 │   ├── admin_pelicula_*.php       # Handlers de películas
+│   ├── admin_producto_*.php       # CRUD de productos dulcería
 │   ├── admin_funcion_handler.php  # Crear funciones
 │   ├── admin_staff_handler.php    # Crear staff
+│   ├── dulceria.php               # Tienda de dulcería
+│   ├── dulceria_recibo.php        # Recibo de compra dulcería
+│   ├── validar_boleto.php         # AJAX: valida boleto ID
 │   ├── procesar_compra.php        # Bridge a src/compra/
+│   ├── procesar_dulceria.php      # Bridge a src/dulceria/
 │   ├── login_handler.php          # Bridge a src/auth/
 │   ├── register_handler.php       # Bridge a src/auth/
 │   ├── staff/
 │   │   ├── vender.php             # Venta en mostrador
 │   │   ├── checkin.php            # Búsqueda y registro check-in
-│   │   └── checkin_handler.php    # Procesa check-in
+│   │   ├── checkin_handler.php    # Procesa check-in
+│   │   └── entregar_dulces_handler.php  # Marca entrega de dulcería
 │   ├── api/
 │   │   └── index.php              # Router REST
 │   └── assets/
@@ -70,6 +77,8 @@ cine/
 │   │   └── login_handler.php      # Login con password_verify
 │   ├── compra/
 │   │   └── procesar_compra.php    # Transacción SQL con FOR UPDATE
+│   ├── dulceria/
+│   │   └── procesar_dulceria.php  # Transacción SQL dulcería
 │   ├── api/
 │   │   ├── response.php           # JSON output
 │   │   ├── middleware.php          # Bearer token auth

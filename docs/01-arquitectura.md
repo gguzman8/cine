@@ -11,10 +11,10 @@ El sistema Cine es una aplicación web basada en pila LAMP (Linux, Apache, MySQL
                       │ HTTP (puerto 80)
 ┌─────────────────────▼───────────────────────────────────────┐
 │                     Apache / PHP                             │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌─────────┐  │
-│  │ index.php │  │ compra.php│  │ ticket.php│  │ login/  │  │
-│  │ (cartelera)│  │ (compra)  │  │ (ticket)  │  │ register│  │
-│  └───────────┘  └───────────┘  └───────────┘  └─────────┘  │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌──────────┐ │
+│  │ index.php │  │ compra.php│  │ ticket.php│  │ dulceria │ │
+│  │ (cartelera)│  │ (compra)  │  │ (ticket)  │  │ .php     │ │
+│  └───────────┘  └───────────┘  └───────────┘  └──────────┘ │
 │  ┌───────────┐  ┌───────────┐  ┌───────────┐               │
 │  │ admin.php │  │ vender.php│  │checkin.php│               │
 │  │ (admin)   │  │ (staff)   │  │ (staff)   │               │
@@ -23,9 +23,12 @@ El sistema Cine es una aplicación web basada en pila LAMP (Linux, Apache, MySQL
 │  ┌─────────────────────▼──────────────────────────────────┐  │
 │  │              src/ (Lógica de negocio)                   │  │
 │  │  ┌──────────┐ ┌───────────────┐ ┌──────────────────┐   │  │
-│  │  │  auth/   │ │  compra/      │ │  includes/       │   │  │
-│  │  │ registro │ │ procesar_compra│ │ session, functions│   │  │
-│  │  │ login    │ │ + transacción  │ │ + CSRF          │   │  │
+│  │  │  auth/   │ │  compra/      │ │  dulceria/      │   │  │
+│  │  │ registro │ │ procesar_compra│ │ procesar_dulceria│   │  │
+│  │  │ login    │ │ + transacción  │ │ + transacción   │   │  │
+│  │  └──────────┘ └────────────────┘ │                 │   │  │
+│  │  │  includes/       │            │                 │   │  │
+│  │  │ session,functions│            │                 │   │  │
 │  │  └──────────┘ └───────────────┘ └──────────────────┘   │  │
 │  │  ┌──────────────────────────────────────────────────┐   │  │
 │  │  │  api/ (REST, token Bearer)                       │   │  │
@@ -46,6 +49,11 @@ El sistema Cine es una aplicación web basada en pila LAMP (Linux, Apache, MySQL
 │  │ (ventas)  │ │ (asientos x  │ │(descuentos)│              │
 │  │           │ │  compra)     │ └───────────┘               │
 │  └───────────┘ └──────────────┘                             │
+│  ┌──────────────┐ ┌──────────────────┐                     │
+│  │  productos   │ │ dulceria_compras │                     │
+│  │ (catálogo)   │ │ + dulceria_detalle│                     │
+│  │ + activa     │ │ (ventas dulcería)│                     │
+│  └──────────────┘ └──────────────────┘                     │
 └──────────────────────────────────────────────────────────────┘
          ▲                            ▲
          │                            │
@@ -64,10 +72,12 @@ Archivos PHP con HTML/CSS. Punto de entrada del usuario.
 |---|---|---|
 | Cartelera pública | `index.php` | Todos (público) |
 | Compra de boletos | `compra.php` | cliente, vendedor |
+| Dulcería | `dulceria.php`, `dulceria_recibo.php` | Todos (autenticados) |
 | Ticket digital | `ticket.php` | Autenticados (dueño o staff) |
 | Admin panel | `admin.php` | admin |
 | Venta (staff) | `staff/vender.php` | admin, vendedor |
 | Check-in | `staff/checkin.php` | admin, vendedor |
+| Entrega dulcería | `staff/entregar_dulces_handler.php` | admin, vendedor |
 | REST API | `api/index.php` | Token Bearer |
 
 ### 2. Lógica de Negocio (`src/`)

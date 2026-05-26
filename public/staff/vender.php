@@ -50,6 +50,7 @@ $funciones = $pdo->query(
             <?php if (count($entregas_pendientes) > 0): ?>
                 <span class="badge badge-yellow" style="font-size:.75rem;">🚚 <?= count($entregas_pendientes) ?> entrega(s)</span>
             <?php endif; ?>
+            <a href="../perfil.php" class="btn-outline">Mi Perfil</a>
             <a href="../logout.php" class="btn-muted">Cerrar sesión</a>
         </nav>
     </header>
