@@ -35,7 +35,7 @@ function es_matinee_horario(string $horario): bool {
 }
 
 function precio_con_matinee(float $precio_base, bool $es_matinee): float {
-    if ($es_matinee) {
+    if ($es_matinee && (int) date('G') < 12) {
         return round($precio_base * (1 - MATINEE_DESCUENTO / 100), 2);
     }
     return $precio_base;
